@@ -4,6 +4,13 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.useredis import kuragano_data
 
+bg = '#0f2537'
+fg = '#ebebeb'
+orange = '#df6919'
+green = '#5cb85c'
+blue = '#5bc0de'
+yellow = '#ffc107'
+red = '#d9534f'
 
 def sequences_of_machine() -> tuple:
     seq1 = [str(n) for n in reversed(range(744, 761))]
@@ -54,7 +61,14 @@ class Kuragano(tk.Frame):
         self.frame = ttk.Frame(self, style='c.TFrame')
         self.frame.pack(expand=True, fill=tk.BOTH)
 
+        self.h2 = 'Arial', 24
+        self.h3 = 'Arial', 16
+
         self.suggestion_d, self.im_df, self.my_df = kuragano_data()
+
+        self.lbl_game_d = {}
+        self.lbl_reg_d = {}
+        self.lbl_bal_d = {}
 
         self.varables_d = {}
         seqs = sequences_of_machine()
@@ -71,7 +85,7 @@ class Kuragano(tk.Frame):
         self.summary_vars = [tk.StringVar(value='') for _ in range(13)]
 
         self.heading()
-        self.info()
+        self.date_suggestion()
         self.buttons()
         self.tables()
         self.footer()
@@ -80,24 +94,23 @@ class Kuragano(tk.Frame):
 
     def heading(self):
         frame1 = ttk.Frame(self.frame, style='c.TFrame')
-        frame1.pack(expand=True, fill=tk.BOTH, pady=16)
-        h3_font = 'Arial', 16
-        label = ttk.Label(frame1, text='Hall KURAGANO', style='c.TLabel', font=h3_font)
-        label.pack(expand=True, fill=tk.BOTH, padx=16)
+        frame1.pack(expand=True, fill=tk.BOTH, padx=32, pady=16)
+        label = ttk.Label(frame1, text='Kuragano', style='c.TLabel', font=self.h2)
+        label.pack(expand=True, fill=tk.BOTH)
         separator = ttk.Separator(frame1, orient='horizontal', style='c.TSeparator')
-        separator.pack(expand=True, fill=tk.BOTH, padx=16)
+        separator.pack(expand=True, fill=tk.BOTH)
 
-    def info(self):
+    def date_suggestion(self):
         frame2 = ttk.Frame(self.frame, style='c.TFrame')
         frame2.pack(expand=True, fill=tk.X, padx=32)
-        label = ttk.Label(frame2, textvariable=self.var_dt, style='c.TLabel', anchor=tk.W)
+        label = ttk.Label(frame2, textvariable=self.var_dt, style='c.TLabel', font=self.h3, anchor=tk.W)
         label.pack(side=tk.LEFT)
-        label = ttk.Label(frame2, textvariable=self.var_sug, style='c.TLabel', anchor=tk.W)
-        label.pack(side=tk.LEFT)      
+        label = ttk.Label(frame2, textvariable=self.var_sug, style='light.TLabel', font=self.h3, anchor=tk.W)
+        label.pack(side=tk.LEFT, padx=16)      
 
     def buttons(self):
         frame3 = ttk.Frame(self.frame, style='c.TFrame')
-        frame3.pack(expand=True, fill=tk.BOTH, padx=32)
+        frame3.pack(expand=True, fill=tk.BOTH, padx=32, pady=8)
         btn = ttk.Button(frame3, text='next day', style='c.TButton', command=self.next_())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='prev day', style='c.TButton', command=self.prev_())
@@ -106,7 +119,6 @@ class Kuragano(tk.Frame):
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='monthly plot', style='c.TButton', command=self.prev_())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        ttk.Frame(frame3, style='c.TFrame').pack(pady=32)
 
     def tables(self):
         frame = ttk.Frame(self.frame, style='c.TFrame')
@@ -124,6 +136,14 @@ class Kuragano(tk.Frame):
         frm2 = ttk.Frame(frame, style='c.TFrame')
         frm2.pack(side=tk.LEFT, anchor=tk.NW)
         self.sub_table(frm2, seqences[1], 'ImJuggler')
+
+        frm3 = ttk.Frame(frame, style='c.TFrame')
+        frm3.pack(side=tk.LEFT, anchor=tk.NW)
+        self.sub_table(frm3, seqences[2], 'myJuggler')
+
+        frm4 = ttk.Frame(frame, style='c.TFrame')
+        frm4.pack(side=tk.LEFT, anchor=tk.NW)
+        self.sub_table(frm4, seqences[3], 'myJuggler')
 
     def set_summary_vars(self, dt):
         sr = _func(dt, self.im_df, self.my_df)
@@ -144,51 +164,67 @@ class Kuragano(tk.Frame):
         lbl = ttk.Label(frm_sum, text='Summary', style='c.TLabel', font=h3_font)
         lbl.pack(anchor=tk.W, padx=16, pady=4)
         for idx, var in zip(index, self.summary_vars):
-            frm = tk.Frame(frm_sum)
+            frm = ttk.Frame(frm_sum, style='c.TFrame')
             frm.pack(padx=16)
-            lbl = ttk.Label(frm, text=idx, width=8, anchor=tk.W)
-            lbl.pack(side=tk.LEFT)
-            lbl = ttk.Label(frm, textvariable=var, width=8, anchor=tk.E)
-            lbl.pack(side=tk.LEFT)
-
-    def footer(self):
-        ttk.Frame(self.frame, style='c.TFrame').pack(pady=16)
+            lbl1 = ttk.Label(frm, text=idx, width=10, style='c.TLabel', anchor=tk.W)
+            lbl1.pack(side=tk.LEFT)
+            lbl2 = ttk.Label(frm, textvariable=var, width=12, style='c.TLabel', anchor=tk.E)
+            lbl2.pack(side=tk.LEFT)
+            if idx in ['Rate', 'iRate', 'mRate']:
+                lbl2.configure(foreground=yellow)
+            if idx in ['iReg', 'mReg']:
+                lbl2.configure(foreground=blue)
 
     def sub_table(self, frame: ttk.Frame, seq: list, name: str):
         h3_font = 'Arial', 16
-        lbl = ttk.Label(frame, text=name, style='c.TLabel', font=h3_font)
+        lbl = ttk.Label(frame, text=name, style='light.TLabel', font=h3_font)
         lbl.pack(anchor=tk.W, padx=16, pady=4)
         for s in seq:
-            frm = tk.Frame(frame)
+            frm = ttk.Frame(frame, style='c.TFrame')
             frm.pack(padx=16)
-            lbl = ttk.Label(frm, text=s, width=4)
+            lbl = ttk.Label(frm, text=s, style='green.TLabel', width=4)
             lbl.pack(side=tk.LEFT)
-            t = self.varables_d[s]
-            lbl = ttk.Label(frm, textvariable=t[0], width=4, anchor=tk.E)
-            lbl.pack(side=tk.LEFT)
-            lbl = ttk.Label(frm, textvariable=t[1], width=4, anchor=tk.E)
-            lbl.pack(side=tk.LEFT)
-            lbl = ttk.Label(frm, textvariable=t[2], width=4, anchor=tk.E)
-            lbl.pack(side=tk.LEFT)
+            games, reg, balance = self.varables_d[s]
+            lbl1 = ttk.Label(frm, textvariable=games, style='c.TLabel', width=4, anchor=tk.E)
+            lbl1.pack(side=tk.LEFT)
+            lbl2 = ttk.Label(frm, textvariable=reg, style='c.TLabel', width=4, anchor=tk.E)
+            lbl2.pack(side=tk.LEFT)
+            lbl3 = ttk.Label(frm, textvariable=balance, style='c.TLabel', width=4, anchor=tk.E)
+            lbl3.pack(side=tk.LEFT)
+            self.lbl_game_d[s] = lbl1
+            self.lbl_reg_d[s] = lbl2
+            self.lbl_bal_d[s] = lbl3
+
+    def footer(self):
+        # spacing only
+        ttk.Frame(self.frame, style='c.TFrame').pack(pady=16)
 
     def set_data(self, dt):
+
         dt_s = datetime.strftime(dt, '%Y/%m/%d')
         self.var_dt.set(dt_s)
         suggestion = self.suggestion_d[dt]
         self.var_sug.set(suggestion)
 
-        df = self.im_df[self.im_df['date'] == dt]
+        idf = self.im_df[self.im_df['date'] == dt]
+        mdf = self.my_df[self.my_df['date'] == dt]
+        df = pd.concat([idf, mdf], axis=0)
         for _, rows in df.iterrows():
-            v_games, v_reg, v_balance = self.varables_d[rows['no']]
+            seq = rows['no']
+            var_games, var_reg, var_balance = self.varables_d[seq]
             games = rows['games']
-            v_games.set(str(games))
+            var_games.set(str(games))
             rb = int(games / rows['rb']) if rows['rb'] else games
-            v_reg.set(str(rb))
-            bln = int(rows['saf'] - rows['out'])
-            v_balance.set(str(bln))
-        # im = last_day(self.im_df)
-        # print(im.head())
-        self.next_()
+            var_reg.set(str(rb))
+            bal = int(rows['saf'] - rows['out'])
+            var_balance.set(str(bal))
+
+            color = red if games >= 5000 else fg
+            self.lbl_game_d[seq].configure(foreground=color)
+            color = orange if games >= 2500 and rb < 300 else fg
+            self.lbl_reg_d[seq].configure(foreground=color)
+            color = yellow if bal >= 2000 else fg
+            self.lbl_bal_d[seq].configure(foreground=color)
 
     def prev_(self):
         def func():
@@ -218,7 +254,6 @@ if __name__ == '__main__':
     _ = Superhero(root)
     app = Kuragano(root)
     app.mainloop()
-    # sugd, imdf, mydf = kuragano_data()
-    # print(mydf.head())
+
     
 

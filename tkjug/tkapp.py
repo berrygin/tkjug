@@ -32,6 +32,8 @@ class Superhero(tk.Frame):
         body_font = 'Arial', 8
         style.configure('c.TFrame', background=bg)
         style.configure('c.TLabel', background=bg, foreground=fg)
+        style.configure('light.TLabel', background=bg, foreground=light)
+        style.configure('green.TLabel', background=bg, foreground=green)
         style.configure('c.TCheckbutton', background=bg, foreground=fg)
         style.configure('c.TButton', borderwidth=0, background=secondary, foreground=fg)
         style.configure('c.TSeparator', background=bg)
