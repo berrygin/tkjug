@@ -44,7 +44,7 @@ class App(tk.Frame):
         self.pack()
         self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
         self.master.title('ฅ•ω•ฅ GOGO! CHANCE ฅ•ω•ฅ')
-        self.master.geometry('+32+32')
+        self.master.geometry('+30+30')
         self.master.resizable(width=False, height=False)
         self.master.attributes('-alpha', 0.98)
         self.frame = ttk.Frame(master, width=200, height=200, style='c.TFrame')
