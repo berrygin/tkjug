@@ -115,9 +115,9 @@ class Kuragano(tk.Frame):
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='prev day', style='c.TButton', command=self.prev_())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='monthly table', style='c.TButton', command=self.prev_())
+        btn = ttk.Button(frame3, text='Im plot', style='c.TButton', command=self.implot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='monthly plot', style='c.TButton', command=self.prev_())
+        btn = ttk.Button(frame3, text='My plot', style='c.TButton', command=self.myplot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
 
     def tables(self):
@@ -247,6 +247,17 @@ class Kuragano(tk.Frame):
                 self.set_summary_vars(self.date)
                 self.set_data(self.date)
         return func
+
+    def implot(self):
+        def func():
+            root = tk.Toplevel(self)
+            app = Plot(master=root)
+            app.mainloop()
+        return func
+
+    def myplot(self):
+        pass
+
 
 if __name__ == '__main__':
     from tkjug.tkapp import Superhero
