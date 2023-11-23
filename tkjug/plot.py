@@ -34,13 +34,14 @@ def get_missing_dates(df):
     missing_dates = [date for date in days_in_target_month if date not in df.index]
     return missing_dates
 
-def weekend_marker(plt, start, end):
+def weekend_marker(ax, x):
+    start, end = min(x), max(x)
     num = (end - start).days + 1
     for day in (start + timedelta(x) for x in range(num)):
         if day.weekday() == 5:
-            plt.axvline(x=day, linewidth=1, color=light)
+            ax.axvline(x=day, linewidth=1, color=light)
         elif day.weekday() == 6:
-            plt.axvline(x=day, linewidth=1, color=fg)
+            ax.axvline(x=day, linewidth=1, color=fg)
 
 
 class Plot(tk.Frame):
@@ -49,11 +50,19 @@ class Plot(tk.Frame):
         self.pack()
         self.df = df
         self.month = month
+        self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
         self.frame = ttk.Frame(self, style='c.TFrame')
         self.frame.pack(expand=True, fill=tk.BOTH)
 
         self.buttons()
-        self.draw(self.month)
+
+        self.fig, self.ax = plt.subplots(1, 1, figsize=(9, 6))
+        self.plot(self.month)
+        self.canvas_draw()
+
+    def _destroyWindow(self):
+        self.master.quit()
+        self.master.destroy()
 
     def buttons(self):
         frame = ttk.Frame(self.frame, style='c.TFrame')
@@ -63,10 +72,14 @@ class Plot(tk.Frame):
 
     def callback(self):
         def func():
-            self.draw(10)
+            self.ax.cla()
+            self.ax2.cla()
+            self.ax3.cla()
+            self.replot(10)
+            self.canvas.draw()
         return func
 
-    def draw(self, month):
+    def replot(self, month):
         df = self.df.copy()
         df_ = df[df['date'].dt.month == month]
 
@@ -77,43 +90,80 @@ class Plot(tk.Frame):
         for dt in missing_dates:
             sample.loc[dt] = pd.Series()
 
-        fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-        fig.set_facecolor(dark)
-        ax.set_facecolor(secondary)
-        ax.set_title('Kuragano Imjuggler', color=fg)
-        ax.set_xlabel('Date', color=fg)
+        self.ax.set_title('Re: Kuragano Imjuggler', color=fg)
+        self.ax.set_xlabel('Date', color=fg)
+
+        x = sample.index
+        y = sample['out']['sum'] - sample['saf']['sum']
+
+        labels = [datetime.strftime(dt, '%y-%m-%d') for dt in x]
+        self.ax.set_xticks(x, labels, rotation=90)
+        self.ax.plot(x, y, label='balance', color=orange)
+        self.ax.hlines([0], x.min(), x.max(), color=orange, linestyle='--')
+
+        y_2 = sample['games']['sum'] / sample['rb']['sum']
+        self.ax2.plot(x, y_2, label=f'reg', linestyle='--', color=yellow)
+
+        y_3 = sample['out']['sum']
+        self.ax3.plot(x, y_3, label='out', color=blue)
+
+        weekend_marker(self.ax, x)
+
+        self.ax.legend(loc=2, facecolor=secondary)
+        self.ax2.legend(loc=1, facecolor=secondary)
+        self.ax3.legend(loc=3, facecolor=secondary)
+
+    def plot(self, month):
+        df = self.df.copy()
+        df_ = df[df['date'].dt.month == month]
+
+        df_ = df_.drop(columns=['no']).set_index(['date'])
+        sample = df_.resample('D').agg(['sum'])
+
+        missing_dates = get_missing_dates(df_)
+        for dt in missing_dates:
+            sample.loc[dt] = pd.Series()
+
+        self.fig.set_facecolor(dark)
+        self.ax.set_facecolor(secondary)
+        self.ax.set_title(f'Kuragano Imjuggler {month}', color=fg)
+        self.ax.set_xlabel('Date', color=fg)
         # balance
         x = sample.index
         y = sample['out']['sum'] - sample['saf']['sum']
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+
         plt.gca().tick_params(axis='x', colors=fg)
         plt.gca().tick_params(axis='y', colors=fg)
-        plt.xticks(x, rotation=90)
-        fig.subplots_adjust(bottom=0.2)
-        ax.plot(x, y, label='balance', color=orange)
-        ax.hlines([0], x.min(), x.max(), color=orange, linestyle='--')
+        # plt.xticks(x, rotation=90)
+        labels = [datetime.strftime(dt, '%y-%m-%d') for dt in x]
+        self.ax.set_xticks(x, labels, rotation=90)
+
+        self.fig.subplots_adjust(bottom=0.2)
+        self.ax.plot(x, y, label='balance', color=orange)
+        self.ax.hlines([0], x.min(), x.max(), color=orange, linestyle='--')
         # reg
-        ax2 = ax.twinx()
+        self.ax2 = self.ax.twinx()
         y_2 = sample['games']['sum'] / sample['rb']['sum']
-        ax2.plot(x, y_2, label=f'reg', linestyle='--', color=yellow)
+        self.ax2.plot(x, y_2, label=f'reg', linestyle='--', color=yellow)
         plt.gca().tick_params(axis='y', colors=fg)
         # out
-        ax3 = ax.twinx()
+        self.ax3 = self.ax.twinx()
         y_3 = sample['out']['sum']
-        ax3.plot(x, y_3, label='out', color=blue)
-        ax3.tick_params(labelright=False, labelleft=False)
-        ax3.tick_params(right=False, left=False)
+        self.ax3.plot(x, y_3, label='out', color=blue)
+        self.ax3.tick_params(labelright=False, labelleft=False)
+        self.ax3.tick_params(right=False, left=False)
 
-        weekend_marker(plt, x[0], x[-1])
+        weekend_marker(self.ax, x)
 
-        ax.legend(loc=2, facecolor=secondary)
-        ax2.legend(loc=1, facecolor=secondary)
-        ax3.legend(loc=3, facecolor=secondary)
+        self.ax.legend(loc=2, facecolor=secondary)
+        self.ax2.legend(loc=1, facecolor=secondary)
+        self.ax3.legend(loc=3, facecolor=secondary)
         # plt.show()
-        canvas = FigureCanvasTkAgg(fig, master=self.frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
+
+    def canvas_draw(self):
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
 
 if __name__ == '__main__':
