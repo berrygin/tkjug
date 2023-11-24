@@ -2,6 +2,8 @@ import redis
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.kuragano import Kuragano
+from tkjug.kamisato import Kamisato
+from tkjug.useredis import kuragano_data, kamisato_data
 
 
 def test2():
@@ -33,6 +35,7 @@ class Superhero(tk.Frame):
         style.configure('c.TFrame', background=bg)
         style.configure('dark.TFrame', background=dark)
         style.configure('c.TLabel', background=bg, foreground=fg)
+        style.configure('dark.TLabel', background=dark, foreground=fg)
         style.configure('light.TLabel', background=bg, foreground=light)
         style.configure('green.TLabel', background=bg, foreground=green)
         style.configure('c.TCheckbutton', background=bg, foreground=fg)
@@ -88,7 +91,10 @@ class App(tk.Frame):
 
     def kamisato(self):
         def func():
-            print('funk!')
+            root = tk.Toplevel(self)
+            sug, im, my, go = kamisato_data()
+            app = Kamisato(sug, im, my, go, master=root)
+            app.mainloop()
         return func
 
 

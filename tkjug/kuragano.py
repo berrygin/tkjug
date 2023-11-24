@@ -259,7 +259,7 @@ class Kuragano(tk.Frame):
             df = self.im_df.copy()
 
             root = tk.Toplevel(self)
-            app = Plot(df, 11, master=root)
+            app = Plot(df, 11, 'Kuragano ImJuggler', master=root)
             app.mainloop()
         return func
 
@@ -268,7 +268,7 @@ class Kuragano(tk.Frame):
             df = self.my_df.copy()
 
             root = tk.Toplevel(self)
-            app = Plot(df, 11, master=root)
+            app = Plot(df, 11, 'Kuragano MyJuggler', master=root)
             app.mainloop()
         return func
 

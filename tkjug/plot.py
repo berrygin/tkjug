@@ -39,7 +39,7 @@ monthd = { i + 1: m for i, m in enumerate(
 
 
 class Plot(tk.Frame):
-    def __init__(self, df, month, master=None):
+    def __init__(self, df, month, title, master=None):
         super().__init__(master)
         self.pack()
         self.df = df
@@ -48,8 +48,8 @@ class Plot(tk.Frame):
         self.frame = ttk.Frame(self, style='dark.TFrame')
         self.frame.pack(expand=True, fill=tk.BOTH)
 
-        title = 'Kuragano ImJuggler - ' + monthd[month] + ' -'
-        self.plot_title = tk.StringVar(value=title)
+        pt = title + ' ' + monthd[month]
+        self.plot_title = tk.StringVar(value=pt)
 
         self.buttons()
         self.init_aixs()
@@ -62,7 +62,7 @@ class Plot(tk.Frame):
         button = ttk.Button(frame, text='prev', style='c.TButton', command=self.callback())
         button.pack(side=tk.LEFT, anchor=tk.W)
         h3_font = 'Arial', 16
-        label = ttk.Label(frame, textvariable=self.plot_title, style='c.TLabel', font=h3_font, anchor=tk.CENTER)
+        label = ttk.Label(frame, textvariable=self.plot_title, style='dark.TLabel', font=h3_font, anchor=tk.CENTER)
         label.pack(expand=True, fill=tk.X, side=tk.LEFT)
         button = ttk.Button(frame, text='next', style='c.TButton', command=self.callback())
         button.pack(anchor=tk.E)

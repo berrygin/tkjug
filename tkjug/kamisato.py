@@ -14,20 +14,21 @@ yellow = '#ffc107'
 red = '#d9534f'
 
 def sequences_of_machine() -> tuple:
-    seq1 = ['1001'] + [str(n) for n in reversed(range(787, 795))]  # im
-    seq2 = [str(n) for n in reversed(range(758, 775))]  # im
-    seq3 = [str(n) for n in range(750, 757)]  # im
-    seq4 = [str(n) for n in reversed(range(993, 1000))]  # my
-    seq5 = [str(n) for n in range(969, 976)]  # my
-    seq6 = [str(n) for n in range(776, 783)]  # go
+    seq1 = ['1001'] + [str(n) for n in reversed(range(787, 796))]  # im
+    seq2 = [str(n) for n in reversed(range(758, 776))]  # im
+    seq3 = [str(n) for n in range(750, 758)]  # im
+    seq4 = [str(n) for n in reversed(range(993, 1001))]  # my
+    seq5 = [str(n) for n in range(969, 977)]  # my
+    seq6 = [str(n) for n in range(776, 784)]  # go
     return seq1, seq2, seq3, seq4, seq5, seq6
 
 def _func(*args):
-    dt, df1, df2 = args
-    cc_df = pd.concat([df1, df2], axis=0)
+    dt, df1, df2, df3 = args
+    cc_df = pd.concat([df1, df2, df3], axis=0)
     df = cc_df[cc_df['date'] == dt]
     im_df = df1[df1['date'] == dt]
     my_df = df2[df2['date'] == dt]
+    go_df = df3[df3['date'] == dt]
 
     out = df['out'].sum()
     out_mean = df['out'].mean()
@@ -45,34 +46,38 @@ def _func(*args):
     my_reg = my_df['games'].sum() / my_df['rb'].sum()
     my_balance = my_df['saf'].sum() - my_df['out'].sum()
 
+    go_games_mean = go_df['games'].mean()
+    go_rate = go_df['saf'].sum() / go_df['out'].sum()
+    go_reg = go_df['games'].sum() / go_df['rb'].sum()
+    go_balance = go_df['saf'].sum() - go_df['out'].sum()
+
     data = [out, out_mean, games_mean, rate, balance]
     data += [im_games_mean, im_rate, im_reg, im_balance]
     data += [my_games_mean, my_rate, my_reg, my_balance]
+    data += [go_games_mean, go_rate, go_reg, go_balance]
 
     index = ['TotalOut', 'MeanOut', 'Games', 'Rate', 'Balance']
     index += ['iGames', 'iRate', 'iReg', 'iBalance']
     index += ['mGames', 'mRate', 'mReg', 'mBalance']
+    index += ['gGames', 'gRate', 'gReg', 'gBalance']
     
     return pd.Series(data, index=index)
 
 
 class Kamisato(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, *args, master=None):
         super().__init__(master)
         self.pack()
         # self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
+        self.sug_d, self.im_df, self.my_df, self.go_df = args
+
         self.master.geometry('+128+128')
         self.frame = ttk.Frame(self, style='c.TFrame')
         self.frame.pack(expand=True, fill=tk.BOTH)
 
-        self.h2 = 'Arial', 24
-        self.h3 = 'Arial', 16
-
-        self.suggestion_d, self.im_df, self.my_df, self.go_df = kamisato_data()
-
-        self.lbl_game_d = {}
-        self.lbl_reg_d = {}
-        self.lbl_bal_d = {}
+        self.var_dt = tk.StringVar()
+        self.var_sug = tk.StringVar()
+        self.summary_vars = [tk.StringVar(value='') for _ in range(17)]
 
         self.varables_d = {}
         seqs = sequences_of_machine()
@@ -81,12 +86,12 @@ class Kamisato(tk.Frame):
                 t = tk.StringVar(value=''), tk.StringVar(value=''), tk.StringVar(value='')
                 self.varables_d |= {s: t}
 
-        self.dates = sorted(set(self.suggestion_d.keys()))
-        self.date = self.dates[-1]
+        self.lbl_game_d = {}
+        self.lbl_reg_d = {}
+        self.lbl_bal_d = {}
 
-        self.var_dt = tk.StringVar()
-        self.var_sug = tk.StringVar()
-        self.summary_vars = [tk.StringVar(value='') for _ in range(13)]
+        self.dates = sorted(set(self.sug_d.keys()))
+        self.date = self.dates[-1]
 
         self.heading()
         self.date_suggestion()
@@ -94,7 +99,7 @@ class Kamisato(tk.Frame):
         self.tables()
         self.footer()
 
-        # self.set_data(self.date)
+        self.set_data(self.date)
 
     def _destroyWindow(self):
         self.master.quit()
@@ -102,19 +107,21 @@ class Kamisato(tk.Frame):
 
     def heading(self):
         hall = 'Kamisato'
+        h2 = 'Arial', 24
         frame1 = ttk.Frame(self.frame, style='c.TFrame')
         frame1.pack(expand=True, fill=tk.BOTH, padx=32, pady=16)
-        label = ttk.Label(frame1, text=hall, style='c.TLabel', font=self.h2)
+        label = ttk.Label(frame1, text=hall, style='c.TLabel', font=h2)
         label.pack(expand=True, fill=tk.BOTH)
         separator = ttk.Separator(frame1, orient='horizontal', style='c.TSeparator')
         separator.pack(expand=True, fill=tk.BOTH)
 
     def date_suggestion(self):
+        h3 = 'Arial', 16
         frame2 = ttk.Frame(self.frame, style='c.TFrame')
         frame2.pack(expand=True, fill=tk.X, padx=32)
-        label = ttk.Label(frame2, textvariable=self.var_dt, style='c.TLabel', font=self.h3, anchor=tk.W)
+        label = ttk.Label(frame2, textvariable=self.var_dt, style='c.TLabel', font=h3, anchor=tk.W)
         label.pack(side=tk.LEFT)
-        label = ttk.Label(frame2, textvariable=self.var_sug, style='light.TLabel', font=self.h3, anchor=tk.W)
+        label = ttk.Label(frame2, textvariable=self.var_sug, style='light.TLabel', font=h3, anchor=tk.W)
         label.pack(side=tk.LEFT, padx=16)      
 
     def buttons(self):
@@ -141,6 +148,7 @@ class Kamisato(tk.Frame):
         frm1 = ttk.Frame(frame, style='c.TFrame')
         frm1.pack(side=tk.LEFT, anchor=tk.NW)
         self.sub_table(frm1, seqs[0], 'Imjuggler')
+        self.sub_table(frm1, seqs[5], 'goJuggler')
 
         frm2 = ttk.Frame(frame, style='c.TFrame')
         frm2.pack(side=tk.LEFT, anchor=tk.NW)
@@ -151,34 +159,31 @@ class Kamisato(tk.Frame):
         self.sub_table(frm3, seqs[2], 'ImJuggler')
 
         frm4 = ttk.Frame(frame, style='c.TFrame')
-        frm4.pack(side=tk.LEFT, anchor=tk.NW)
+        frm4.pack(side=tk.LEFT, anchor=tk.N)
         self.sub_table(frm4, seqs[3], 'myJuggler')
 
         frm5 = ttk.Frame(frame, style='c.TFrame')
-        frm5.pack(side=tk.LEFT, anchor=tk.NW)
+        frm5.pack(anchor=tk.NW)
         self.sub_table(frm5, seqs[4], 'myJuggler')
 
-        frm6 = ttk.Frame(frame, style='c.TFrame')
-        frm6.pack(side=tk.LEFT, anchor=tk.NW)
-        self.sub_table(frm6, seqs[5], 'goJuggler')
-
     def set_summary_vars(self, dt):
-        sr = _func(dt, self.im_df, self.my_df)
+        sr = _func(dt, self.im_df, self.my_df, self.go_df)
         for var, (key, item) in zip(self.summary_vars, sr.items()):
-            if key in ['Rate', 'iRate', 'mRate']:
+            if key in ['Rate', 'iRate', 'mRate', 'gRate']:
                 value = round(item, 3)
             else:
                 value = round(item, 1)
             var.set(str(value))
 
     def summary(self, frame: ttk.Frame):
+        h3 = 'Arial', 16
         index = ['TotalOut', 'MeanOut', 'Games', 'Rate', 'Balance']
         index += ['iGames', 'iRate', 'iReg', 'iBalance']
         index += ['mGames', 'mRate', 'mReg', 'mBalance']
+        index += ['gGames', 'gRate', 'gReg', 'gBalance']
         frm_sum = ttk.Frame(frame, style='c.TFrame')
         frm_sum.pack(side=tk.LEFT, anchor=tk.NW)
-        h3_font = 'Arial', 16
-        lbl = ttk.Label(frm_sum, text='Summary', style='c.TLabel', font=h3_font)
+        lbl = ttk.Label(frm_sum, text='Summary', style='c.TLabel', font=h3)
         lbl.pack(anchor=tk.W, padx=16, pady=4)
         for idx, var in zip(index, self.summary_vars):
             frm = ttk.Frame(frm_sum, style='c.TFrame')
@@ -187,15 +192,16 @@ class Kamisato(tk.Frame):
             lbl1.pack(side=tk.LEFT)
             lbl2 = ttk.Label(frm, textvariable=var, width=12, style='c.TLabel', anchor=tk.E)
             lbl2.pack(side=tk.LEFT)
-            if idx in ['Rate', 'iRate', 'mRate']:
+            if idx in ['Rate', 'iRate', 'mRate', 'gRate']:
                 lbl2.configure(foreground=yellow)
-            if idx in ['iReg', 'mReg']:
+            if idx in ['iReg', 'mReg', 'gReg']:
                 lbl2.configure(foreground=blue)
 
     def sub_table(self, frame: ttk.Frame, seq: list, name: str):
-        h3_font = 'Arial', 16
-        lbl = ttk.Label(frame, text=name, style='light.TLabel', font=h3_font)
+        h3 = 'Arial', 16
+        lbl = ttk.Label(frame, text=name, style='light.TLabel', font=h3)
         lbl.pack(anchor=tk.W, padx=16, pady=4)
+
         for s in seq:
             frm = ttk.Frame(frame, style='c.TFrame')
             frm.pack(padx=16)
@@ -220,22 +226,22 @@ class Kamisato(tk.Frame):
 
         dt_s = datetime.strftime(dt, '%Y/%m/%d')
         self.var_dt.set(dt_s)
-        suggestion = self.suggestion_d[dt]
+        suggestion = self.sug_d[dt]
         self.var_sug.set(suggestion)
-
         imdf = self.im_df[self.im_df['date'] == dt]
         mydf = self.my_df[self.my_df['date'] == dt]
         godf = self.go_df[self.go_df['date'] == dt]
         df = pd.concat([imdf, mydf, godf], axis=0)
+        self.zodai()
         for _, rows in df.iterrows():
             seq = rows['no']
-            var_games, var_reg, var_balance = self.varables_d[seq]
+            var_game, var_reg, var_bal = self.varables_d[seq]
             games = rows['games']
-            var_games.set(str(games))
+            var_game.set(str(games))
             rb = int(games / rows['rb']) if rows['rb'] else games
             var_reg.set(str(rb))
             bal = int(rows['saf'] - rows['out'])
-            var_balance.set(str(bal))
+            var_bal.set(str(bal))
 
             color = red if games >= 5000 else fg
             self.lbl_game_d[seq].configure(foreground=color)
@@ -243,6 +249,13 @@ class Kamisato(tk.Frame):
             self.lbl_reg_d[seq].configure(foreground=color)
             color = yellow if bal >= 2000 else fg
             self.lbl_bal_d[seq].configure(foreground=color)
+
+    def zodai(self):
+        for seq in ['787', '788']:
+            var_game, var_reg, var_bal = self.varables_d[seq]
+            var_game.set('')
+            var_reg.set('')
+            var_bal.set('')
 
     def prev_day(self):
         def func():
@@ -271,7 +284,7 @@ class Kamisato(tk.Frame):
             df = self.im_df.copy()
 
             root = tk.Toplevel(self)
-            app = Plot(df, 11, master=root)
+            app = Plot(df, 11, 'Kamisato ImJuggler', master=root)
             app.mainloop()
         return func
 
@@ -280,16 +293,15 @@ class Kamisato(tk.Frame):
             df = self.my_df.copy()
 
             root = tk.Toplevel(self)
-            app = Plot(df, 11, master=root)
+            app = Plot(df, 11, 'Kamisato MyJuggler', master=root)
             app.mainloop()
         return func
 
 
 if __name__ == '__main__':
     from tkjug.tkapp import Superhero
-    # sug, im, my, go = kamisato_data()
-    # print(go.head())
+    sug, im, my, go = kamisato_data()
     root = tk.Tk()
     _ = Superhero(root)
-    app = Kamisato(root)
+    app = Kamisato(sug, im, my, go, master=root)
     app.mainloop()
