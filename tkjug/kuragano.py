@@ -3,6 +3,7 @@ import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.useredis import kuragano_data
+from tkjug.plot import Plot
 
 bg = '#0f2537'
 fg = '#ebebeb'
@@ -111,9 +112,9 @@ class Kuragano(tk.Frame):
     def buttons(self):
         frame3 = ttk.Frame(self.frame, style='c.TFrame')
         frame3.pack(expand=True, fill=tk.BOTH, padx=32, pady=8)
-        btn = ttk.Button(frame3, text='next day', style='c.TButton', command=self.next_())
+        btn = ttk.Button(frame3, text='next day', style='c.TButton', command=self.next_day())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='prev day', style='c.TButton', command=self.prev_())
+        btn = ttk.Button(frame3, text='prev day', style='c.TButton', command=self.prev_day())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='Im plot', style='c.TButton', command=self.implot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
@@ -226,7 +227,7 @@ class Kuragano(tk.Frame):
             color = yellow if bal >= 2000 else fg
             self.lbl_bal_d[seq].configure(foreground=color)
 
-    def prev_(self):
+    def prev_day(self):
         def func():
             i = self.dates.index(self.date)
             if i == 0:
@@ -237,7 +238,7 @@ class Kuragano(tk.Frame):
                 self.set_data(self.date)
         return func
 
-    def next_(self):
+    def next_day(self):
         def func():
             i = self.dates.index(self.date)
             if i == len(self.dates) - 1:
@@ -250,13 +251,21 @@ class Kuragano(tk.Frame):
 
     def implot(self):
         def func():
+            df = self.im_df.copy()
+
             root = tk.Toplevel(self)
-            app = Plot(master=root)
+            app = Plot(df, 11, master=root)
             app.mainloop()
         return func
 
     def myplot(self):
-        pass
+        def func():
+            df = self.my_df.copy()
+
+            root = tk.Toplevel(self)
+            app = Plot(df, 11, master=root)
+            app.mainloop()
+        return func
 
 
 if __name__ == '__main__':

@@ -31,6 +31,7 @@ class Superhero(tk.Frame):
         h3_font = 'Arial', 16
         body_font = 'Arial', 8
         style.configure('c.TFrame', background=bg)
+        style.configure('dark.TFrame', background=dark)
         style.configure('c.TLabel', background=bg, foreground=fg)
         style.configure('light.TLabel', background=bg, foreground=light)
         style.configure('green.TLabel', background=bg, foreground=green)
