@@ -45,7 +45,7 @@ class App(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()
-        self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
+        # self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
         self.master.title('ฅ•ω•ฅ GOGO! CHANCE ฅ•ω•ฅ')
         self.master.geometry('+32+32')
         self.master.resizable(width=False, height=False)

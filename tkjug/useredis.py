@@ -47,3 +47,11 @@ def kuragano_data():
     imdf = dic2df(dic, 'imjug')
     mydf = dic2df(dic, 'myjug')
     return sugd, imdf, mydf
+
+def kamisato_data():
+    dic = get_halldata('kamisato')
+    sugd = suggestions(dic)
+    imdf = dic2df(dic, 'imjug')
+    mydf = dic2df(dic, 'myjug')
+    godf = dic2df(dic, 'gojug')
+    return sugd, imdf, mydf, godf

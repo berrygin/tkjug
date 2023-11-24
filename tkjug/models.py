@@ -21,11 +21,24 @@ def myjug() -> np.ndarray:
     replay =   (7.298,) * 6
     return np.array([big, reg, grape, cherry, bell, clown, replay])
 
+def gojug() -> np.ndarray:
+    # https://nana-press.com/post/1595428/2
+    big = 259.0, 258.0, 257.0, 254.0, 247.3, 234.9
+    reg = 354.2, 332.7, 306.2, 268.6, 247.3, 234.9
+    grape = 6.25, 6.20, 6.15, 6.07, 6.00, 5.92
+    cherry = 38.1, 38.1, 36.82, 35.62, 35.62, 35.62
+    bell =  (1024.0,) * 6
+    clown = (1024.0,) * 6
+    replay =   (7.298,) * 6
+    return np.array([big, reg, grape, cherry, bell, clown, replay])
+
 def hall_rate(model: str) -> np.ndarray:
     if model == 'imjug':
         a = imjug()
     elif model == 'myjug':
         a = myjug()
+    elif model == 'gojug':
+        a = gojug()
     else:
         return
     cherry = a[3] * 2
@@ -45,7 +58,7 @@ def get_out_and_saf(bb: int, rb: int, games: int, model='imjug'):
     pk = get_pk(setting, a)
     payouts = np.array([-1., -1., 8., 2., 14., 10., 3., 0.])
     bbpay = 252
-    if model == 'myjug':
+    if model == 'myjug' or model == 'gojug':
         bbpay = 240
     rbpay = 96
     base = pk * payouts * games

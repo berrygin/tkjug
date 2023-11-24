@@ -33,6 +33,11 @@ def get_missing_dates(df):
     missing_dates = [date for date in days_in_target_month if date not in df.index]
     return missing_dates
 
+monthd = { i + 1: m for i, m in enumerate(
+    ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+)}
+
+
 class Plot(tk.Frame):
     def __init__(self, df, month, master=None):
         super().__init__(master)
@@ -43,20 +48,22 @@ class Plot(tk.Frame):
         self.frame = ttk.Frame(self, style='dark.TFrame')
         self.frame.pack(expand=True, fill=tk.BOTH)
 
+        title = 'Kuragano ImJuggler - ' + monthd[month] + ' -'
+        self.plot_title = tk.StringVar(value=title)
+
         self.buttons()
         self.init_aixs()
         self.plot(self.month)
         self.canvas_draw()
-
-    def _destroyWindow(self):
-        self.master.quit()
-        self.master.destroy()
 
     def buttons(self):
         frame = ttk.Frame(self.frame, style='dark.TFrame')
         frame.pack(expand=True, fill=tk.X, padx=128, pady=16)
         button = ttk.Button(frame, text='prev', style='c.TButton', command=self.callback())
         button.pack(side=tk.LEFT, anchor=tk.W)
+        h3_font = 'Arial', 16
+        label = ttk.Label(frame, textvariable=self.plot_title, style='c.TLabel', font=h3_font, anchor=tk.CENTER)
+        label.pack(expand=True, fill=tk.X, side=tk.LEFT)
         button = ttk.Button(frame, text='next', style='c.TButton', command=self.callback())
         button.pack(anchor=tk.E)
 
@@ -89,7 +96,7 @@ class Plot(tk.Frame):
         for dt in missing_dates:
             sample.loc[dt] = pd.Series()
 
-        self.ax1.set_title(f'Kuragano Imjuggler {month}', color=fg)
+        # self.ax1.set_title(f'Kuragano Imjuggler {month}', color=fg)
         self.ax1.set_xlabel('Date', color=fg)
         self.ax1.tick_params(axis='x', colors=fg)
 
@@ -132,6 +139,12 @@ class Plot(tk.Frame):
                 self.ax1.axvline(x=day, linewidth=1, color=light)
             elif day.weekday() == 6:
                 self.ax1.axvline(x=day, linewidth=1, color=fg)
+
+    def _destroyWindow(self):
+        self.fig.clf()
+        plt.close(self.fig)
+        self.master.quit()
+        self.master.destroy()
 
 if __name__ == '__main__':
     from tkjug.tkapp import Superhero

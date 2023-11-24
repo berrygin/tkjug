@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.useredis import kuragano_data
+from tkjug.useredis import kamisato_data
 from tkjug.plot import Plot
 
 bg = '#0f2537'
@@ -14,11 +14,13 @@ yellow = '#ffc107'
 red = '#d9534f'
 
 def sequences_of_machine() -> tuple:
-    seq1 = [str(n) for n in reversed(range(744, 761))]
-    seq2 = [str(n) for n in range(721, 738)] + ['700']
-    seq3 = [str(n) for n in reversed(range(711, 721))]
-    seq4 = [str(n) for n in range(681, 691)]
-    return seq1, seq2, seq3, seq4
+    seq1 = ['1001'] + [str(n) for n in reversed(range(787, 795))]  # im
+    seq2 = [str(n) for n in reversed(range(758, 775))]  # im
+    seq3 = [str(n) for n in range(750, 757)]  # im
+    seq4 = [str(n) for n in reversed(range(993, 1000))]  # my
+    seq5 = [str(n) for n in range(969, 976)]  # my
+    seq6 = [str(n) for n in range(776, 783)]  # go
+    return seq1, seq2, seq3, seq4, seq5, seq6
 
 def _func(*args):
     dt, df1, df2 = args
@@ -54,7 +56,7 @@ def _func(*args):
     return pd.Series(data, index=index)
 
 
-class Kuragano(tk.Frame):
+class Kamisato(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()
@@ -66,7 +68,7 @@ class Kuragano(tk.Frame):
         self.h2 = 'Arial', 24
         self.h3 = 'Arial', 16
 
-        self.suggestion_d, self.im_df, self.my_df = kuragano_data()
+        self.suggestion_d, self.im_df, self.my_df, self.go_df = kamisato_data()
 
         self.lbl_game_d = {}
         self.lbl_reg_d = {}
@@ -92,16 +94,17 @@ class Kuragano(tk.Frame):
         self.tables()
         self.footer()
 
-        self.set_data(self.date)
+        # self.set_data(self.date)
 
     def _destroyWindow(self):
         self.master.quit()
         self.master.destroy()
 
     def heading(self):
+        hall = 'Kamisato'
         frame1 = ttk.Frame(self.frame, style='c.TFrame')
         frame1.pack(expand=True, fill=tk.BOTH, padx=32, pady=16)
-        label = ttk.Label(frame1, text='Kuragano', style='c.TLabel', font=self.h2)
+        label = ttk.Label(frame1, text=hall, style='c.TLabel', font=self.h2)
         label.pack(expand=True, fill=tk.BOTH)
         separator = ttk.Separator(frame1, orient='horizontal', style='c.TSeparator')
         separator.pack(expand=True, fill=tk.BOTH)
@@ -133,23 +136,31 @@ class Kuragano(tk.Frame):
         self.set_summary_vars(self.date)
         self.summary(frame)
 
-        seqences = sequences_of_machine()
+        seqs = sequences_of_machine()
 
         frm1 = ttk.Frame(frame, style='c.TFrame')
         frm1.pack(side=tk.LEFT, anchor=tk.NW)
-        self.sub_table(frm1, seqences[0], 'Imjuggler')
+        self.sub_table(frm1, seqs[0], 'Imjuggler')
 
         frm2 = ttk.Frame(frame, style='c.TFrame')
         frm2.pack(side=tk.LEFT, anchor=tk.NW)
-        self.sub_table(frm2, seqences[1], 'ImJuggler')
+        self.sub_table(frm2, seqs[1], 'ImJuggler')
 
         frm3 = ttk.Frame(frame, style='c.TFrame')
         frm3.pack(side=tk.LEFT, anchor=tk.NW)
-        self.sub_table(frm3, seqences[2], 'myJuggler')
+        self.sub_table(frm3, seqs[2], 'ImJuggler')
 
         frm4 = ttk.Frame(frame, style='c.TFrame')
         frm4.pack(side=tk.LEFT, anchor=tk.NW)
-        self.sub_table(frm4, seqences[3], 'myJuggler')
+        self.sub_table(frm4, seqs[3], 'myJuggler')
+
+        frm5 = ttk.Frame(frame, style='c.TFrame')
+        frm5.pack(side=tk.LEFT, anchor=tk.NW)
+        self.sub_table(frm5, seqs[4], 'myJuggler')
+
+        frm6 = ttk.Frame(frame, style='c.TFrame')
+        frm6.pack(side=tk.LEFT, anchor=tk.NW)
+        self.sub_table(frm6, seqs[5], 'goJuggler')
 
     def set_summary_vars(self, dt):
         sr = _func(dt, self.im_df, self.my_df)
@@ -212,9 +223,10 @@ class Kuragano(tk.Frame):
         suggestion = self.suggestion_d[dt]
         self.var_sug.set(suggestion)
 
-        idf = self.im_df[self.im_df['date'] == dt]
-        mdf = self.my_df[self.my_df['date'] == dt]
-        df = pd.concat([idf, mdf], axis=0)
+        imdf = self.im_df[self.im_df['date'] == dt]
+        mydf = self.my_df[self.my_df['date'] == dt]
+        godf = self.go_df[self.go_df['date'] == dt]
+        df = pd.concat([imdf, mydf, godf], axis=0)
         for _, rows in df.iterrows():
             seq = rows['no']
             var_games, var_reg, var_balance = self.varables_d[seq]
@@ -275,10 +287,9 @@ class Kuragano(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Superhero
+    # sug, im, my, go = kamisato_data()
+    # print(go.head())
     root = tk.Tk()
     _ = Superhero(root)
-    app = Kuragano(root)
+    app = Kamisato(root)
     app.mainloop()
-
-    
-
