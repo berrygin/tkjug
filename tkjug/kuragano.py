@@ -5,13 +5,37 @@ import tkinter.ttk as ttk
 from tkjug.useredis import kuragano_data
 from tkjug.plot import Plot
 
-bg = '#0f2537'
-fg = '#ebebeb'
-orange = '#df6919'
-green = '#5cb85c'
-blue = '#5bc0de'
-yellow = '#ffc107'
-red = '#d9534f'
+
+
+_colors = {
+    # darkly
+    'primary': '#315883',
+    'secondary': '#444444',
+    'success': '#00c38c',
+    'primary': '#0095e2',
+    'warning': '#fe9b00',
+    'danger': '#f8371f',
+    'foreground': '#ffffff',
+    'light': '#acb5be',
+    'dark': '#303030',
+    'background': '#222'
+}
+
+colors = {
+    # cyborg
+    'primary': '#0da3de',
+    'secondary': '#5e5e5e',
+    'success': '#68be0d',
+    'info': '#ad0dd4',
+    'warning': '#ff890d',
+    'danger': '#df0d0d',
+    'foreground': '#ffffff',
+    'light': '#2d2d2d',
+    'dark': '#b1b3b2',
+    'background': '#060606'
+}
+bg = colors['background']
+fg = colors['foreground']
 
 def sequences_of_machine() -> tuple:
     seq1 = [str(n) for n in reversed(range(744, 761))]
@@ -111,7 +135,7 @@ class Kuragano(tk.Frame):
         frame2.pack(expand=True, fill=tk.X, padx=32)
         label = ttk.Label(frame2, textvariable=self.var_dt, style='c.TLabel', font=self.h3, anchor=tk.W)
         label.pack(side=tk.LEFT)
-        label = ttk.Label(frame2, textvariable=self.var_sug, style='light.TLabel', font=self.h3, anchor=tk.W)
+        label = ttk.Label(frame2, textvariable=self.var_sug, style='c.TLabel', font=self.h3, anchor=tk.W)
         label.pack(side=tk.LEFT, padx=16)      
 
     def buttons(self):
@@ -121,9 +145,11 @@ class Kuragano(tk.Frame):
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='prev day', style='c.TButton', command=self.prev_day())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='Im plot', style='c.TButton', command=self.implot())
+        btn = ttk.Button(frame3, text='im plot', style='c.TButton', command=self.implot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='My plot', style='c.TButton', command=self.myplot())
+        btn = ttk.Button(frame3, text='my plot', style='c.TButton', command=self.myplot())
+        btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
+        btn = ttk.Button(frame3, text='montly table', style='c.TButton', command=self.myplot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
 
     def tables(self):
@@ -176,14 +202,16 @@ class Kuragano(tk.Frame):
             lbl1.pack(side=tk.LEFT)
             lbl2 = ttk.Label(frm, textvariable=var, width=12, style='c.TLabel', anchor=tk.E)
             lbl2.pack(side=tk.LEFT)
+            if idx == 'Games':
+                lbl2.configure(foreground=colors['primary'])
             if idx in ['Rate', 'iRate', 'mRate']:
-                lbl2.configure(foreground=yellow)
+                lbl2.configure(foreground=colors['danger'])
             if idx in ['iReg', 'mReg']:
-                lbl2.configure(foreground=blue)
+                lbl2.configure(foreground=colors['warning'])
 
     def sub_table(self, frame: ttk.Frame, seq: list, name: str):
         h3_font = 'Arial', 16
-        lbl = ttk.Label(frame, text=name, style='light.TLabel', font=h3_font)
+        lbl = ttk.Label(frame, text=name, style='c.TLabel', font=h3_font)
         lbl.pack(anchor=tk.W, padx=16, pady=4)
         for s in seq:
             frm = ttk.Frame(frame, style='c.TFrame')
@@ -225,11 +253,11 @@ class Kuragano(tk.Frame):
             bal = int(rows['saf'] - rows['out'])
             var_balance.set(str(bal))
 
-            color = red if games >= 5000 else fg
+            color = colors['primary'] if games >= 5000 else fg
             self.lbl_game_d[seq].configure(foreground=color)
-            color = orange if games >= 2500 and rb < 300 else fg
+            color = colors['warning'] if games >= 2500 and rb < 300 else fg
             self.lbl_reg_d[seq].configure(foreground=color)
-            color = yellow if bal >= 2000 else fg
+            color = colors['danger'] if bal >= 2000 else fg
             self.lbl_bal_d[seq].configure(foreground=color)
 
     def prev_day(self):
@@ -274,9 +302,9 @@ class Kuragano(tk.Frame):
 
 
 if __name__ == '__main__':
-    from tkjug.tkapp import Superhero
+    from tkjug.tkapp import Theme
     root = tk.Tk()
-    _ = Superhero(root)
+    _ = Theme(root)
     app = Kuragano(root)
     app.mainloop()
 

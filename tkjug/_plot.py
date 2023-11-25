@@ -8,18 +8,20 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 
-colors = {
-    'bluegreen': '#8dd3c7',
-    'lemon': '#feffb3',
-    'lilac': '#bfbbd9',
-    'salmon': '#fa8174',
-    'aero': '#81b1d2',
-    'orange': '#fdb462',
-    'junebud': '#b3de69',
-    'violet': '#bc82bd',
-    'mint': '#ccebc4',
-    'yellow': '#ffed6f'
-}
+def hex2rgb(colorcode: str):
+    code = colorcode.lstrip('#')
+    return tuple(int(code[i:i+2], 16)/256 for i in range(0, 6, 2))
+# SuperHero
+orange = hex2rgb('#df6919')
+green = hex2rgb('#5cb85c')
+blue = hex2rgb('#5bc0de')
+yellow = hex2rgb('#ffc107')
+red = hex2rgb('#d9534f')
+light = hex2rgb('#abb6c2')
+secondary = hex2rgb('#4e5d6c')
+dark = hex2rgb('#20374c')
+fg = hex2rgb('#ebebeb')
+bg = hex2rgb('#0f2537')
 
 def get_missing_dates(df):
     dt = df.index[0]
@@ -43,7 +45,7 @@ class Plot(tk.Frame):
         self.df = df
         self.month = month
         self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
-        self.frame = ttk.Frame(self, style='plot.TFrame')
+        self.frame = ttk.Frame(self, style='dark.TFrame')
         self.frame.pack(expand=True, fill=tk.BOTH)
 
         pt = title + ' ' + monthd[month]
@@ -55,14 +57,14 @@ class Plot(tk.Frame):
         self.canvas_draw()
 
     def buttons(self):
-        frame = ttk.Frame(self.frame, style='plot.TFrame')
+        frame = ttk.Frame(self.frame, style='dark.TFrame')
         frame.pack(expand=True, fill=tk.X, padx=128, pady=16)
-        button = ttk.Button(frame, text='prev', style='plot.TButton', command=self.callback())
+        button = ttk.Button(frame, text='prev', style='c.TButton', command=self.callback())
         button.pack(side=tk.LEFT, anchor=tk.W)
         h3_font = 'Arial', 16
-        label = ttk.Label(frame, textvariable=self.plot_title, style='plot.TLabel', font=h3_font, anchor=tk.CENTER)
+        label = ttk.Label(frame, textvariable=self.plot_title, style='dark.TLabel', font=h3_font, anchor=tk.CENTER)
         label.pack(expand=True, fill=tk.X, side=tk.LEFT)
-        button = ttk.Button(frame, text='next', style='plot.TButton', command=self.callback())
+        button = ttk.Button(frame, text='next', style='c.TButton', command=self.callback())
         button.pack(anchor=tk.E)
 
     def callback(self):
@@ -75,15 +77,13 @@ class Plot(tk.Frame):
         return func
 
     def init_aixs(self):
-        self.fig, self.ax1 = plt.subplots(1, 1, figsize=(8, 5))
+        self.fig, self.ax1 = plt.subplots(1, 1, figsize=(9, 6))
         self.ax2 = self.ax1.twinx()
         self.ax3 = self.ax1.twinx()
-        self.fig.set_facecolor('black')
-        self.ax1.set_facecolor('black')
+        self.fig.set_facecolor(dark)
+        self.ax1.set_facecolor(secondary)
         self.fig.subplots_adjust(top=0.99)
         self.fig.subplots_adjust(bottom=0.2)
-        for spine in self.ax3.spines.values():
-            spine.set_color('white')
 
     def plot(self, month):
         df = self.df.copy()
@@ -96,25 +96,23 @@ class Plot(tk.Frame):
         for dt in missing_dates:
             sample.loc[dt] = pd.Series()
 
-        self.ax1.set_xlabel('Date', color='white')
-        self.ax1.tick_params(axis='x', colors='white')
+        # self.ax1.set_title(f'Kuragano Imjuggler {month}', color=fg)
+        self.ax1.set_xlabel('Date', color=fg)
+        self.ax1.tick_params(axis='x', colors=fg)
 
         x = sample.index
         labels = [datetime.strftime(dt, '%y-%m-%d') for dt in x]
         self.ax1.set_xticks(x, labels, rotation=90)
         # balance
-        orange = colors['orange']
         y_1 = sample['out']['sum'] - sample['saf']['sum']
         self.ax1.plot(x, y_1, label='balance', color=orange)
         self.ax1.hlines([0], x.min(), x.max(), color=orange, linestyle='--')
         self.ax1.tick_params(axis='y', colors=orange)
         # reg
-        yellow = colors['mint']
         y_2 = sample['games']['sum'] / sample['rb']['sum']
         self.ax2.plot(x, y_2, label=f'reg', linestyle='--', color=yellow)
         self.ax2.tick_params(axis='y', colors=yellow)
         # out
-        blue = colors['aero']
         y_3 = sample['out']['sum']
         self.ax3.plot(x, y_3, label='out', color=blue)
         self.ax3.tick_params(labelright=False, labelleft=False)
@@ -122,10 +120,9 @@ class Plot(tk.Frame):
 
         self.weekend_axvline(x)
 
-        self.ax1.legend(loc=2, labelcolor='white', facecolor='black', edgecolor='black')
-        self.ax2.legend(loc=1, labelcolor='white', facecolor='black', edgecolor='black')
-        self.ax3.legend(loc=3, labelcolor='white', facecolor='black', edgecolor='black')
-
+        self.ax1.legend(loc=2, facecolor=secondary)
+        self.ax2.legend(loc=1, facecolor=secondary)
+        self.ax3.legend(loc=3, facecolor=secondary)
 
     def canvas_draw(self):
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
@@ -135,14 +132,13 @@ class Plot(tk.Frame):
     def weekend_axvline(self, x):
         start, end = min(x), max(x)
         num = (end - start).days + 1
-
         for day in (start + timedelta(x) for x in range(num)):
             if day in holidays.JP():
-                self.ax1.axvline(x=day, linewidth=1, color=colors['violet'], linestyle=(0, (1, 10)))
+                self.ax1.axvline(x=day, linewidth=1, color=fg, linestyle='--')
             elif day.weekday() == 5:
-                self.ax1.axvline(x=day, linewidth=1, color=colors['lilac'], linestyle=(0, (1, 10)))
+                self.ax1.axvline(x=day, linewidth=1, color=light)
             elif day.weekday() == 6:
-                self.ax1.axvline(x=day, linewidth=1, color=colors['violet'], linestyle=(0, (1, 10)))
+                self.ax1.axvline(x=day, linewidth=1, color=fg)
 
     def _destroyWindow(self):
         self.fig.clf()

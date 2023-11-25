@@ -11,38 +11,48 @@ def test2():
     print(len(rc.keys()))
 
 
-class Superhero(tk.Frame):
+class Theme(tk.Frame):
     ''' Bootstrap Superhero & clam Theme '''
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()
         style = ttk.Style()
         style.theme_use('clam')
-        bg = '#0f2537'
-        fg = '#ebebeb'
-        secondary = '#4e5d6c'
-        light = '#abb6c2'
-        dark = '#20374c'
-        orange = '#df6919'
-        green = '#5cb85c'
-        blue = '#5bc0de'
-        yellow = '#ffc107'
-        red = '#d9534f'
+
+        colors = {
+            # cyborg
+            'primary': '#0da3de',
+            'secondary': '#5e5e5e',
+            'success': '#68be0d',
+            'info': '#ad0dd4',
+            'warning': '#ff890d',
+            'danger': '#df0d0d',
+            'foreground': '#ffffff',
+            'light': '#2d2d2d',
+            'dark': '#b1b3b2',
+            'background': '#060606'
+        }
+        bg = colors['background']
+        fg = colors['foreground']
+
         h1_font = 'Arial', 32
         h2_font = 'Arial', 24
         h3_font = 'Arial', 16
         body_font = 'Arial', 8
         style.configure('c.TFrame', background=bg)
-        style.configure('dark.TFrame', background=dark)
         style.configure('c.TLabel', background=bg, foreground=fg)
-        style.configure('dark.TLabel', background=dark, foreground=fg)
-        style.configure('light.TLabel', background=bg, foreground=light)
-        style.configure('green.TLabel', background=bg, foreground=green)
-        style.configure('c.TCheckbutton', background=bg, foreground=fg)
-        style.configure('c.TButton', borderwidth=0, background=secondary, foreground=fg)
+        style.configure('green.TLabel', background=bg, foreground=colors['success'])
+        # style.configure('c.TCheckbutton', background=bg, foreground=fg)
+        style.configure('c.TButton', borderwidth=0, background=colors['secondary'], foreground=fg)
         style.configure('c.TSeparator', background=bg)
-        style.configure('Treeview.Heading', background=secondary, foreground=fg)
-        style.configure('Treeview', background=dark, foreground=fg)
+        # tree
+        style.configure('Treeview.Heading', background=colors['secondary'], foreground=fg, font=('Arial', 8, 'bold'))
+        style.configure('Treeview', background=colors['light'], foreground=fg, font=('Arial', 8))
+        # matplot dark
+        style.configure('plot.TFrame', background='black')
+        style.configure('plot.TLabel', background='black', foreground='white')
+        style.configure('plot.TButton', background=colors['secondary'], foreground='white')  # mint
+
 
 class App(tk.Frame):
     def __init__(self, master=None):
@@ -104,7 +114,7 @@ def hex2rgb(colorcode: str):
 
 def main():
     root = tk.Tk()
-    _ = Superhero(root)
+    _ = Theme(root)
     app = App(master=root)
     app.mainloop()
 
