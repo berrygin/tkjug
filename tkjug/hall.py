@@ -86,9 +86,7 @@ class Hall(tk.Frame):
                 t = tk.StringVar(value=''), tk.StringVar(value=''), tk.StringVar(value='')
                 self.varables_d |= {s: t}
         # island
-        self.lbl_game_d = {}
-        self.lbl_reg_d = {}
-        self.lbl_bal_d = {}
+        self.label_d = {}
 
         self.heading()
         self.suggestion()
@@ -172,37 +170,37 @@ class Hall(tk.Frame):
         for machine_no in seq:
             frm = ttk.Frame(frame, style='c.TFrame')
             frm.pack(padx=16)
-            lbl = ttk.Label(frm, text=machine_no, style='green.TLabel', width=4)
-            lbl.pack(side=tk.LEFT)
+            lbl_no = ttk.Label(frm, text=machine_no, style='green.TLabel', width=4)
+            lbl_no.pack(side=tk.LEFT)
             game, reg, balance = self.varables_d[machine_no]
-            lbl1 = ttk.Label(frm, textvariable=game, style='c.TLabel', width=4, anchor=tk.E)
-            lbl1.pack(side=tk.LEFT)
-            lbl2 = ttk.Label(frm, textvariable=reg, style='c.TLabel', width=4, anchor=tk.E)
-            lbl2.pack(side=tk.LEFT)
-            lbl3 = ttk.Label(frm, textvariable=balance, style='c.TLabel', width=5, anchor=tk.E)
-            lbl3.pack(side=tk.LEFT)
-            self.lbl_game_d[machine_no] = lbl1
-            self.lbl_reg_d[machine_no] = lbl2
-            self.lbl_bal_d[machine_no] = lbl3
+            lbl_game = ttk.Label(frm, textvariable=game, style='c.TLabel', width=4, anchor=tk.E)
+            lbl_game.pack(side=tk.LEFT)
+            lbl_reg = ttk.Label(frm, textvariable=reg, style='c.TLabel', width=4, anchor=tk.E)
+            lbl_reg.pack(side=tk.LEFT)
+            lbl_bal = ttk.Label(frm, textvariable=balance, style='c.TLabel', width=5, anchor=tk.E)
+            lbl_bal.pack(side=tk.LEFT)
+            self.label_d[machine_no] = lbl_game, lbl_reg, lbl_bal
 
     def update_island(self, dt):
         dt_s = datetime.strftime(dt, '%Y/%m/%d')
         self.var_dt.set(dt_s)
         suggestion = self.sug_d[dt]
         self.var_sug.set(suggestion)
+        # island
         imdf = self.im_df[self.im_df['date'] == dt]
         mydf = self.my_df[self.my_df['date'] == dt]
         godf = self.go_df[self.go_df['date'] == dt]
         df = pd.concat([imdf, mydf, godf], axis=0)
         # reset
         for values in self.varables_d.values():
-            for var_ in values:
-                var_.set('')
+            for var in values:
+                var.set('')
         # draw
         for _, rows in df.iterrows():
-            seq = rows['no']
-            game, reg, balance = self.varables_d[seq]
+            machine_no = rows['no']
             games = rows['games']
+
+            game, reg, balance = self.varables_d[machine_no]
             game.set(str(games))
             rb_rate = int(games / rows['rb']) if rows['rb'] else float('NaN')
             reg.set(str(rb_rate))
@@ -210,13 +208,13 @@ class Hall(tk.Frame):
             balance.set(str(bal))
 
             color = colors['primary'] if games >= 5000 else colors['foreground']
-            self.lbl_game_d[seq].configure(foreground=color)
+            self.label_d[machine_no][0].configure(foreground=color)
             color = colors['warning'] if games >= 2500 and rb_rate < 300 else colors['foreground']
-            self.lbl_reg_d[seq].configure(foreground=color)
+            self.label_d[machine_no][1].configure(foreground=color)
             color = colors['dark'] if pd.isna(rb_rate) else colors['foreground']
-            self.lbl_reg_d[seq].configure(foreground=color)
+            self.label_d[machine_no][1].configure(foreground=color)
             color = colors['danger'] if bal >= 2000 else colors['foreground']
-            self.lbl_bal_d[seq].configure(foreground=color)
+            self.label_d[machine_no][2].configure(foreground=color)
 
 
     def footer_space(self):
