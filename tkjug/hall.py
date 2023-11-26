@@ -20,11 +20,12 @@ colors = {
     'dark': '#b1b3b2',
     'background': '#060606'
 }
-bg = colors['background']
-fg = colors['foreground']
 
+summary_keys = ['TotalOut', 'Out', 'Games', 'Rate', 'Balance',
+                'imGames', 'imRate', 'imReg', 'imBal',
+                'myGames', 'myRate', 'myReg', 'myBal']
 
-def _func(*args):
+def calc(*args):
     dt, df1, df2 = args
     cc_df = pd.concat([df1, df2], axis=0)
     df = cc_df[cc_df['date'] == dt]
@@ -47,15 +48,11 @@ def _func(*args):
     my_reg = my_df['games'].sum() / my_df['rb'].sum()
     my_balance = my_df['saf'].sum() - my_df['out'].sum()
 
-    data = [out, out_mean, games_mean, rate, balance]
-    data += [im_games_mean, im_rate, im_reg, im_balance]
-    data += [my_games_mean, my_rate, my_reg, my_balance]
+    values = [out, out_mean, games_mean, rate, balance,
+                im_games_mean, im_rate, im_reg, im_balance,
+                my_games_mean, my_rate, my_reg, my_balance]
 
-    index = ['TotalOut', 'MeanOut', 'Games', 'Rate', 'Balance']
-    index += ['iGames', 'iRate', 'iReg', 'iBalance']
-    index += ['mGames', 'mRate', 'mReg', 'mBalance']
-    
-    return pd.Series(data, index=index)
+    return dict(zip(summary_keys, values))
 
 
 class Hall(tk.Frame):
@@ -75,7 +72,12 @@ class Hall(tk.Frame):
 
         self.var_dt = tk.StringVar()
         self.var_sug = tk.StringVar()
-        self.summary_vars = [tk.StringVar(value='') for _ in range(13)]
+
+        self.dates = sorted(self.sug_d.keys())
+        self.date = self.dates[-1]
+
+        variables = [tk.StringVar(value='') for _ in range(len(summary_keys))]
+        self.summary_d = dict(zip(summary_keys, variables))
 
         self.varables_d = {}
         seqs = self.sequences_of_machine()
@@ -83,20 +85,17 @@ class Hall(tk.Frame):
             for s in seq:
                 t = tk.StringVar(value=''), tk.StringVar(value=''), tk.StringVar(value='')
                 self.varables_d |= {s: t}
-
+        # island
         self.lbl_game_d = {}
         self.lbl_reg_d = {}
         self.lbl_bal_d = {}
 
-        self.dates = sorted(set(self.sug_d.keys()))
-        self.date = self.dates[-1]
-
         self.heading()
-        self.suggestions()
+        self.suggestion()
         self.buttons()
         self.summary()
-        self.update_summary(self.date)
         self.machine_layout()
+        self.update_summary(self.date)
         self.update_island(self.date)
         self.footer_space()
 
@@ -113,7 +112,7 @@ class Hall(tk.Frame):
         separator = ttk.Separator(frame1, orient='horizontal', style='c.TSeparator')
         separator.pack(expand=True, fill=tk.BOTH)
 
-    def suggestions(self):
+    def suggestion(self):
         h3 = 'Arial', 16
         frame2 = ttk.Frame(self.upper_frame, style='c.TFrame')
         frame2.pack(expand=True, fill=tk.X, padx=16)
@@ -129,9 +128,9 @@ class Hall(tk.Frame):
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='prev day', style='c.TButton', command=self.prev_day())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='Im plot', style='c.TButton', command=self.implot())
+        btn = ttk.Button(frame3, text='im plot', style='c.TButton', command=self.implot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='My plot', style='c.TButton', command=self.myplot())
+        btn = ttk.Button(frame3, text='my plot', style='c.TButton', command=self.myplot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='montly table', style='c.TButton', command=self.mtable())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
@@ -142,51 +141,49 @@ class Hall(tk.Frame):
         h3 = 'Arial', 16
         lbl = ttk.Label(summary_frame, text='Summary', style='c.TLabel', font=h3)
         lbl.pack(anchor=tk.W, padx=16)
-        index = ['TotalOut', 'MeanOut', 'Games', 'Rate', 'Balance',
-                'iGames', 'iRate', 'iReg', 'iBalance', 'mGames', 'mRate', 'mReg', 'mBalance']
-        for idx, value in zip(index, self.summary_vars):
-            frm = ttk.Frame(summary_frame, style='c.TFrame')
-            frm.pack(padx=16, pady=1)
-            lbl1 = ttk.Label(frm, text=idx, width=10, style='c.TLabel', anchor=tk.W)
+        for key, variable in self.summary_d.items():
+            frame = ttk.Frame(summary_frame, style='c.TFrame')
+            frame.pack(padx=16, pady=1)
+            lbl1 = ttk.Label(frame, text=key, width=10, style='c.TLabel', anchor=tk.W)
             lbl1.pack(side=tk.LEFT)
-            lbl2 = ttk.Label(frm, textvariable=value, width=12, style='c.TLabel', anchor=tk.E)
+            lbl2 = ttk.Label(frame, textvariable=variable, width=12, style='c.TLabel', anchor=tk.E)
             lbl2.pack(side=tk.LEFT)
-            if idx == 'Games':
+            if key == 'Games':
                 lbl2.configure(foreground=colors['primary'])
-            if idx in ['Rate', 'iRate', 'mRate']:
+            if key.endswith('Rate'):
                 lbl2.configure(foreground=colors['danger'])
-            if idx in ['iReg', 'mReg']:
+            if key.endswith('Reg'):
                 lbl2.configure(foreground=colors['warning'])
 
     def update_summary(self, dt):
-        sr = _func(dt, self.im_df, self.my_df)
-        for var, (key, item) in zip(self.summary_vars, sr.items()):
-            if key in ['Rate', 'iRate', 'mRate', 'gRate']:
-                value = round(item, 3)
+        d = calc(dt, self.im_df, self.my_df)
+        for key, value in d.items():
+            if key.endswith('Rate'):
+                s = str(round(value, 3))
             else:
-                value = round(item, 1)
-            var.set(str(value))
+                s = str(round(value, 1))
+            self.summary_d[key].set(s)
 
     def island(self, frame: ttk.Frame, seq: list, name: str):
         h3 = 'Arial', 16
         lbl = ttk.Label(frame, text=name, style='c.TLabel', font=h3)
         lbl.pack(anchor=tk.W, padx=16, pady=4)
 
-        for s in seq:
+        for machine_no in seq:
             frm = ttk.Frame(frame, style='c.TFrame')
             frm.pack(padx=16)
-            lbl = ttk.Label(frm, text=s, style='green.TLabel', width=4)
+            lbl = ttk.Label(frm, text=machine_no, style='green.TLabel', width=4)
             lbl.pack(side=tk.LEFT)
-            games, reg, balance = self.varables_d[s]
-            lbl1 = ttk.Label(frm, textvariable=games, style='c.TLabel', width=4, anchor=tk.E)
+            game, reg, balance = self.varables_d[machine_no]
+            lbl1 = ttk.Label(frm, textvariable=game, style='c.TLabel', width=4, anchor=tk.E)
             lbl1.pack(side=tk.LEFT)
             lbl2 = ttk.Label(frm, textvariable=reg, style='c.TLabel', width=4, anchor=tk.E)
             lbl2.pack(side=tk.LEFT)
             lbl3 = ttk.Label(frm, textvariable=balance, style='c.TLabel', width=5, anchor=tk.E)
             lbl3.pack(side=tk.LEFT)
-            self.lbl_game_d[s] = lbl1
-            self.lbl_reg_d[s] = lbl2
-            self.lbl_bal_d[s] = lbl3
+            self.lbl_game_d[machine_no] = lbl1
+            self.lbl_reg_d[machine_no] = lbl2
+            self.lbl_bal_d[machine_no] = lbl3
 
     def update_island(self, dt):
         dt_s = datetime.strftime(dt, '%Y/%m/%d')
@@ -199,25 +196,28 @@ class Hall(tk.Frame):
         df = pd.concat([imdf, mydf, godf], axis=0)
         # reset
         for values in self.varables_d.values():
-            for var_value in values:
-                var_value.set('')
+            for var_ in values:
+                var_.set('')
         # draw
         for _, rows in df.iterrows():
             seq = rows['no']
-            var_game, var_reg, var_bal = self.varables_d[seq]
+            game, reg, balance = self.varables_d[seq]
             games = rows['games']
-            var_game.set(str(games))
-            rb = int(games / rows['rb']) if rows['rb'] else games
-            var_reg.set(str(rb))
+            game.set(str(games))
+            rb_rate = int(games / rows['rb']) if rows['rb'] else float('NaN')
+            reg.set(str(rb_rate))
             bal = int(rows['saf'] - rows['out'])
-            var_bal.set(str(bal))
+            balance.set(str(bal))
 
-            color = colors['primary'] if games >= 5000 else fg
+            color = colors['primary'] if games >= 5000 else colors['foreground']
             self.lbl_game_d[seq].configure(foreground=color)
-            color = colors['warning'] if games >= 2500 and rb < 300 else fg
+            color = colors['warning'] if games >= 2500 and rb_rate < 300 else colors['foreground']
             self.lbl_reg_d[seq].configure(foreground=color)
-            color = colors['danger'] if bal >= 2000 else fg
+            color = colors['dark'] if pd.isna(rb_rate) else colors['foreground']
+            self.lbl_reg_d[seq].configure(foreground=color)
+            color = colors['danger'] if bal >= 2000 else colors['foreground']
             self.lbl_bal_d[seq].configure(foreground=color)
+
 
     def footer_space(self):
         ttk.Frame(self.lower_frame, style='c.TFrame').pack(pady=16)
@@ -247,7 +247,6 @@ class Hall(tk.Frame):
     def implot(self):
         def func():
             df = self.im_df.copy()
-
             root = tk.Toplevel(self)
             app = Plot(df, 11, 'Kamisato ImJuggler', master=root)
             app.mainloop()
@@ -308,8 +307,8 @@ class Hall(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
-    sug, im, my, go = kamisato_data()
+    args = kamisato_data()
     root = tk.Tk()
     _ = Theme(root)
-    app = Hall(sug, im, my, go, master=root)
+    app = Hall(*args, master=root)
     app.mainloop()
