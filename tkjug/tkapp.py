@@ -1,14 +1,14 @@
 import redis
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.kuragano import Kuragano
-from tkjug.kamisato import Kamisato
+from tkjug.hall_kuragano import Hall_kuragano
+from tkjug.hall_kamisato import Hall_kamisato
 from tkjug.useredis import kuragano_data, kamisato_data
 
 
-def test2():
-    rc = redis.Redis()
-    print(len(rc.keys()))
+# def test2():
+#     rc = redis.Redis()
+#     print(len(rc.keys()))
 
 
 class Theme(tk.Frame):
@@ -95,15 +95,16 @@ class App(tk.Frame):
     def kuragano(self):
         def func():
             root = tk.Toplevel(self)
-            app = Kuragano(master=root)
+            args = kuragano_data()
+            app = Hall_kuragano(*args, master=root)
             app.mainloop()
         return func
 
     def kamisato(self):
         def func():
             root = tk.Toplevel(self)
-            sug, im, my, go = kamisato_data()
-            app = Kamisato(sug, im, my, go, master=root)
+            args = kamisato_data()
+            app = Hall_kamisato(*args, master=root)
             app.mainloop()
         return func
 

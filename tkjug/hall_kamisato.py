@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import holidays
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -25,8 +26,8 @@ summary_keys = ['TotalOut', 'Out', 'Games', 'Rate', 'Balance',
                 'imGames', 'imRate', 'imReg', 'imBal',
                 'myGames', 'myRate', 'myReg', 'myBal']
 
-def calc(*args):
-    dt, df1, df2 = args
+def calc(dt, df1, df2):
+    # dt, df1, df2 = args
     cc_df = pd.concat([df1, df2], axis=0)
     df = cc_df[cc_df['date'] == dt]
     im_df = df1[df1['date'] == dt]
@@ -55,12 +56,14 @@ def calc(*args):
     return dict(zip(summary_keys, values))
 
 
-class Hall(tk.Frame):
+class Hall_kamisato(tk.Frame):
     def __init__(self, *args, master=None):
         super().__init__(master)
         self.pack()
         # self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
-        self.sug_d, self.im_df, self.my_df, self.go_df = args
+        self.hall = 'Kamisato'
+        self.args = args  # sug_d, im_df, my_df, (go_df)
+        self.sug_d = args[0]
 
         self.master.geometry('+64+64')
         frame = ttk.Frame(self, style='c.TFrame')
@@ -70,11 +73,12 @@ class Hall(tk.Frame):
         self.lower_frame = ttk.Frame(frame, style='c.TFrame')
         self.lower_frame.pack(expand=True, fill=tk.BOTH, padx=16)
 
-        self.var_dt = tk.StringVar()
-        self.var_sug = tk.StringVar()
-
         self.dates = sorted(self.sug_d.keys())
-        self.date = self.dates[-1]
+        dt = self.dates[-1]
+        self.dt = dt
+        self.dt_v = tk.StringVar(value='')
+        self.weekday_v = tk.StringVar(value='')
+        self.sug_v = tk.StringVar(value='')
 
         variables = [tk.StringVar(value='') for _ in range(len(summary_keys))]
         self.summary_d = dict(zip(summary_keys, variables))
@@ -85,23 +89,25 @@ class Hall(tk.Frame):
             for s in seq:
                 t = tk.StringVar(value=''), tk.StringVar(value=''), tk.StringVar(value='')
                 self.varables_d |= {s: t}
-        # island
         self.label_d = {}
 
         self.heading()
-        self.suggestion()
+        self.date_sug()
         self.buttons()
         self.summary()
         self.machine_layout()
-        self.update_summary(self.date)
-        self.update_island(self.date)
         self.footer_space()
+
+        self.update_date_sug(dt)
+        self.update_summary(dt)
+        self.update_island(dt)
 
     def _destroyWindow(self):
         self.master.quit()
         self.master.destroy()
 
-    def heading(self, hall='Kamisato'):
+    def heading(self):
+        hall = self.hall
         h2 = 'Arial', 24
         frame1 = ttk.Frame(self.upper_frame, style='c.TFrame')
         frame1.pack(expand=True, fill=tk.BOTH, padx=16, pady=16)
@@ -110,14 +116,29 @@ class Hall(tk.Frame):
         separator = ttk.Separator(frame1, orient='horizontal', style='c.TSeparator')
         separator.pack(expand=True, fill=tk.BOTH)
 
-    def suggestion(self):
+    def date_sug(self):
         h3 = 'Arial', 16
-        frame2 = ttk.Frame(self.upper_frame, style='c.TFrame')
-        frame2.pack(expand=True, fill=tk.X, padx=16)
-        label = ttk.Label(frame2, textvariable=self.var_dt, style='c.TLabel', font=h3, anchor=tk.W)
+        frame = ttk.Frame(self.upper_frame, style='c.TFrame')
+        frame.pack(expand=True, fill=tk.X, padx=16)
+        label = ttk.Label(frame, textvariable=self.dt_v, style='c.TLabel', font=h3, anchor=tk.W)
         label.pack(side=tk.LEFT)
-        label = ttk.Label(frame2, textvariable=self.var_sug, style='c.TLabel', font=h3, anchor=tk.W)
-        label.pack(side=tk.LEFT, padx=16)      
+        self.label_wk = ttk.Label(frame, textvariable=self.weekday_v, style='c.TLabel', width=4, font=h3, anchor=tk.CENTER)
+        self.label_wk.pack(side=tk.LEFT)
+        label = ttk.Label(frame, textvariable=self.sug_v, style='c.TLabel', font=h3, anchor=tk.W)
+        label.pack(side=tk.LEFT)    
+
+    def update_date_sug(self, dt):
+        dt_s = datetime.strftime(dt, '%Y/%m/%d')
+        self.dt_v.set(dt_s)
+        i = dt.weekday()
+        d = {0: 'mon', 1: 'tue', 2: 'wed', 3: 'thu', 4: 'fri', 5: 'sat',6: 'sun'}
+        self.weekday_v.set(d[i])
+        if dt in holidays.JP() or dt.weekday() > 4:
+            self.label_wk.configure(foreground=colors['warning'])
+        else:
+            self.label_wk.configure(foreground=colors['foreground'])
+        sug = self.sug_d[dt]
+        self.sug_v.set(sug)
 
     def buttons(self):
         frame3 = ttk.Frame(self.upper_frame, style='c.TFrame')
@@ -154,7 +175,7 @@ class Hall(tk.Frame):
                 lbl2.configure(foreground=colors['warning'])
 
     def update_summary(self, dt):
-        d = calc(dt, self.im_df, self.my_df)
+        d = calc(dt, *self.args[1:3])
         for key, value in d.items():
             if key.endswith('Rate'):
                 s = str(round(value, 3))
@@ -162,12 +183,12 @@ class Hall(tk.Frame):
                 s = str(round(value, 1))
             self.summary_d[key].set(s)
 
-    def island(self, frame: ttk.Frame, seq: list, name: str):
+    def island(self, frame: ttk.Frame, machine_list: list, machine_name: str):
         h3 = 'Arial', 16
-        lbl = ttk.Label(frame, text=name, style='c.TLabel', font=h3)
-        lbl.pack(anchor=tk.W, padx=16, pady=4)
+        label = ttk.Label(frame, text=machine_name, style='c.TLabel', font=h3)
+        label.pack(anchor=tk.W, padx=16, pady=4)
 
-        for machine_no in seq:
+        for machine_no in machine_list:
             frm = ttk.Frame(frame, style='c.TFrame')
             frm.pack(padx=16)
             lbl_no = ttk.Label(frm, text=machine_no, style='green.TLabel', width=4)
@@ -182,15 +203,8 @@ class Hall(tk.Frame):
             self.label_d[machine_no] = lbl_game, lbl_reg, lbl_bal
 
     def update_island(self, dt):
-        dt_s = datetime.strftime(dt, '%Y/%m/%d')
-        self.var_dt.set(dt_s)
-        suggestion = self.sug_d[dt]
-        self.var_sug.set(suggestion)
-        # island
-        imdf = self.im_df[self.im_df['date'] == dt]
-        mydf = self.my_df[self.my_df['date'] == dt]
-        godf = self.go_df[self.go_df['date'] == dt]
-        df = pd.concat([imdf, mydf, godf], axis=0)
+        dfs = [df[df['date']==dt] for df in self.args[1:]]
+        df = pd.concat(dfs, axis=0)
         # reset
         for values in self.varables_d.values():
             for var in values:
@@ -199,7 +213,6 @@ class Hall(tk.Frame):
         for _, rows in df.iterrows():
             machine_no = rows['no']
             games = rows['games']
-
             game, reg, balance = self.varables_d[machine_no]
             game.set(str(games))
             rb_rate = int(games / rows['rb']) if rows['rb'] else float('NaN')
@@ -222,45 +235,49 @@ class Hall(tk.Frame):
 
     def prev_day(self):
         def func():
-            i = self.dates.index(self.date)
+            i = self.dates.index(self.dt)
             if i == 0:
                 print('No!')
             else:
-                self.date = self.dates[i - 1]
-                self.update_summary(self.date)
-                self.update_island(self.date)
+                dt = self.dates[i - 1]
+                self.dt = dt
+                self.update_date_sug(dt)
+                self.update_summary(dt)
+                self.update_island(dt)
         return func
 
     def next_day(self):
         def func():
-            i = self.dates.index(self.date)
+            i = self.dates.index(self.dt)
             if i == len(self.dates) - 1:
                 print('No!')
             else:
-                self.date = self.dates[i + 1]
-                self.update_summary(self.date)
-                self.update_island(self.date)
+                dt = self.dates[i + 1]
+                self.dt = dt
+                self.update_summary(dt)
+                self.update_date_sug(dt)
+                self.update_island(dt)
         return func
 
     def implot(self):
         def func():
-            df = self.im_df.copy()
+            im_df = self.args[1].copy()
             root = tk.Toplevel(self)
-            app = Plot(df, 11, 'Kamisato ImJuggler', master=root)
+            app = Plot(im_df, 11, 'Kamisato ImJuggler', master=root)
             app.mainloop()
         return func
 
     def myplot(self):
         def func():
-            df = self.my_df.copy()
+            my_df = self.args[2].copy()
             root = tk.Toplevel(self)
-            app = Plot(df, 11, 'Kamisato MyJuggler', master=root)
+            app = Plot(my_df, 11, 'Kamisato MyJuggler', master=root)
             app.mainloop()
         return func
 
     def mtable(self):
         def func():
-            df = self.my_df.copy()
+            df = self.args[2].copy()
             root = tk.Toplevel(self)
             app = Mtable(df, master=root)
             app.mainloop()
@@ -305,8 +322,8 @@ class Hall(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
-    args = kamisato_data()
     root = tk.Tk()
     _ = Theme(root)
-    app = Hall(*args, master=root)
+    args = kamisato_data()
+    app = Hall_kamisato(*args, master=root)
     app.mainloop()
