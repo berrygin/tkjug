@@ -34,3 +34,9 @@ jobs:
       with:
         name: test-results
         path: test-results.xml
+
+    # テスト結果をGitHub上で表示する
+    - name: display results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: artifacts/**/*.xml
