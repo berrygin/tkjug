@@ -26,15 +26,14 @@ jobs:
       continue-on-error: true
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: test-results
         path: test-results.xml
 
-    # テスト結果をGitHub上で表示する
-    - name: display results
+    - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()
       with:
-        files: | 
+        files: |
           test-results/**/*.xml
