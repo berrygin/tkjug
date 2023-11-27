@@ -4,7 +4,7 @@ on: push  # プッシュやプルリクエスト時に実行する
 
 jobs:
   test:
-    runs-on: macOS  # Ubuntuランナーを使用
+    runs-on: ubuntu-latest # Ubuntuランナーを使用
 
     steps:
     - name: Checkout code
