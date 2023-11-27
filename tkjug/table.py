@@ -5,6 +5,7 @@ import tkinter.ttk as ttk
 
 from tkjug.useredis import kamisato_data
 
+# spam
 sug, im, my, go = kamisato_data()
 
 def monthly_table(df: pd.DataFrame):
