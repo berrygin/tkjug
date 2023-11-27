@@ -1,6 +1,6 @@
 name: Run pytest
 
-on: [push]  # プッシュやプルリクエスト時に実行する
+on: push  # プッシュやプルリクエスト時に実行する
 
 jobs:
   test:

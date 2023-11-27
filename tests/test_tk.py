@@ -3,6 +3,7 @@ from tkjug.kamisato import Hall as Kamisato
 from tkjug.useredis import kamisato_data
 import pytest
 
+# mock redis
 
 @pytest.fixture
 def app():
