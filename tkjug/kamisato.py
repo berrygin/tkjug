@@ -5,7 +5,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.useredis import kamisato_data
 from tkjug.plot import Plot
-from tkjug.table import Mtable
+from tkjug.table import Table
 
 
 colors = {

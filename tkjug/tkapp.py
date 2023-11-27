@@ -46,8 +46,8 @@ class Theme(tk.Frame):
         style.configure('c.TButton', borderwidth=0, background=colors['secondary'], foreground=fg)
         style.configure('c.TSeparator', background=bg)
         # tree
-        style.configure('Treeview.Heading', background=colors['secondary'], foreground=fg, font=('Arial', 8, 'bold'))
-        style.configure('Treeview', background=colors['light'], foreground=fg, font=('Arial', 8))
+        style.configure('Treeview.Heading', background=colors['secondary'], foreground=fg, font=('Courier', 10))
+        style.configure('Treeview', background='black', foreground=fg, font=('Courier', 9))
         # matplot dark
         style.configure('plot.TFrame', background='black')
         style.configure('plot.TLabel', background='black', foreground='white')
