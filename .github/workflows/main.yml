@@ -29,11 +29,10 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-results
-        path: results/test-results.xml
+        path: test-results.xml
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()
       with:
-        files: |
-          results/test-results.xml
+        files: test-results.xml
