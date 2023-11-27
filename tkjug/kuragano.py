@@ -3,7 +3,7 @@ import holidays
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.useredis import kamisato_data
+from tkjug.useredis import kuragano_data
 from tkjug.plot import Plot
 from tkjug.table import Mtable
 
@@ -56,12 +56,12 @@ def calc(dt, df1, df2):
     return dict(zip(summary_keys, values))
 
 
-class Hall_kamisato(tk.Frame):
+class Hall(tk.Frame):
     def __init__(self, *args, master=None):
         super().__init__(master)
         self.pack()
         # self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
-        self.hall = 'Kamisato'
+        self.hall = 'Kuragano'
         self.args = args  # sug_d, im_df, my_df, (go_df)
         self.sug_d = args[0]
 
@@ -125,7 +125,7 @@ class Hall_kamisato(tk.Frame):
         self.label_wk = ttk.Label(frame, textvariable=self.weekday_v, style='c.TLabel', width=4, font=h3, anchor=tk.CENTER)
         self.label_wk.pack(side=tk.LEFT)
         label = ttk.Label(frame, textvariable=self.sug_v, style='c.TLabel', font=h3, anchor=tk.W)
-        label.pack(side=tk.LEFT)    
+        label.pack(side=tk.LEFT)
 
     def update_date_sug(self, dt):
         dt_s = datetime.strftime(dt, '%Y/%m/%d')
@@ -283,15 +283,13 @@ class Hall_kamisato(tk.Frame):
             app.mainloop()
         return func
 
-    """ Kamisato """
+    """ Kuragano """
     def sequences_of_machine(self) -> tuple:
-        seq1 = ['1001'] + [str(n) for n in reversed(range(787, 796))]  # im
-        seq2 = [str(n) for n in reversed(range(758, 776))]  # im
-        seq3 = [str(n) for n in range(750, 758)]  # im
-        seq4 = [str(n) for n in reversed(range(993, 1001))]  # my
-        seq5 = [str(n) for n in range(969, 977)]  # my
-        seq6 = [str(n) for n in range(776, 784)]  # go
-        return seq1, seq2, seq3, seq4, seq5, seq6
+        seq1 = [str(n) for n in reversed(range(744, 761))]
+        seq2 = [str(n) for n in range(721, 738)] + ['700']
+        seq3 = [str(n) for n in reversed(range(711, 721))]
+        seq4 = [str(n) for n in range(681, 691)]
+        return seq1, seq2, seq3, seq4
 
     def machine_layout(self):
         frame = ttk.Frame(self.lower_frame, style='c.TFrame')
@@ -302,7 +300,6 @@ class Hall_kamisato(tk.Frame):
         frm1 = ttk.Frame(frame, style='c.TFrame')
         frm1.pack(side=tk.LEFT, anchor=tk.NW)
         self.island(frm1, seqs[0], 'Imjuggler')
-        self.island(frm1, seqs[5], 'goJuggler')
 
         frm2 = ttk.Frame(frame, style='c.TFrame')
         frm2.pack(side=tk.LEFT, anchor=tk.NW)
@@ -310,20 +307,16 @@ class Hall_kamisato(tk.Frame):
 
         frm3 = ttk.Frame(frame, style='c.TFrame')
         frm3.pack(side=tk.LEFT, anchor=tk.NW)
-        self.island(frm3, seqs[2], 'ImJuggler')
+        self.island(frm3, seqs[2], 'myJuggler')
 
         frm4 = ttk.Frame(frame, style='c.TFrame')
-        frm4.pack(side=tk.LEFT, anchor=tk.N)
+        frm4.pack(side=tk.LEFT, anchor=tk.NW)
         self.island(frm4, seqs[3], 'myJuggler')
-
-        frm5 = ttk.Frame(frame, style='c.TFrame')
-        frm5.pack(anchor=tk.NW)
-        self.island(frm5, seqs[4], 'myJuggler')
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
     root = tk.Tk()
     _ = Theme(root)
-    args = kamisato_data()
-    app = Hall_kamisato(*args, master=root)
+    args = kuragano_data()
+    app = Hall(*args, master=root)
     app.mainloop()

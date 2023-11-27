@@ -1,8 +1,8 @@
 import redis
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.hall_kuragano import Hall_kuragano
-from tkjug.hall_kamisato import Hall_kamisato
+from tkjug.kuragano import Hall as Kuragano
+from tkjug.kamisato import Hall as Kamisato
 from tkjug.useredis import kuragano_data, kamisato_data
 
 
@@ -96,7 +96,7 @@ class App(tk.Frame):
         def func():
             root = tk.Toplevel(self)
             args = kuragano_data()
-            app = Hall_kuragano(*args, master=root)
+            app = Kuragano(*args, master=root)
             app.mainloop()
         return func
 
@@ -104,10 +104,9 @@ class App(tk.Frame):
         def func():
             root = tk.Toplevel(self)
             args = kamisato_data()
-            app = Hall_kamisato(*args, master=root)
+            app = Kamisato(*args, master=root)
             app.mainloop()
         return func
-
 
 def hex2rgb(colorcode: str):
     hex_ = colorcode.lstrip('#')
