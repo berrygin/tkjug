@@ -20,10 +20,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt  # 必要なパッケージをインストール
 
-    - name: Run pytest
-      run: |
-        pytest  # pytestを実行
-
     - name: Run pytest and display results
       run: |
         pytest --junitxml=test-results.xml
