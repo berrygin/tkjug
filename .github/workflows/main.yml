@@ -13,7 +13,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4  # Python環境をセットアップする
       with:
-        python-version: 3.10  # Pythonのバージョンを指定
+        python-version: 3.11  # Pythonのバージョンを指定
 
     - name: Install dependencies
       run: |
