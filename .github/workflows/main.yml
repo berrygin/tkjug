@@ -35,4 +35,4 @@ jobs:
     - name: display results
       uses: EnricoMi/publish-unit-test-result-action@v2
       with:
-        files: artifacts/test-results.xml
+        files: artifacts/**/test-results.xml
