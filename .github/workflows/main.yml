@@ -2,6 +2,8 @@ name: Run pytest
 
 on: push  # プッシュやプルリクエスト時に実行する
 
+permissions: write
+
 jobs:
   test:
     runs-on: ubuntu-latest # Ubuntuランナーを使用
