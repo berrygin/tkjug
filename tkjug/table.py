@@ -2,13 +2,12 @@ from datetime import datetime, timedelta
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
-
 from tkjug.useredis import kamisato_data
 
 # spam
 sug, im, my, go = kamisato_data()
 
-def monthly_table(df: pd.DataFrame):
+def monthly_table_table(df: pd.DataFrame):
 
     units = df['no'].unique().size
     df_ = df.drop(columns=['no']).set_index(['date'])
@@ -17,7 +16,6 @@ def monthly_table(df: pd.DataFrame):
 
     dates = sample['bb']['count'] / units
     # print(dates)
-
     out = sample['out']['sum']
     saf = sample['saf']['sum']
     balance = out - saf
@@ -32,11 +30,31 @@ def monthly_table(df: pd.DataFrame):
     _df.columns = c
     return _df
 
-# df = monthly_table(my)
-# print(df)
+
+def daily_table(df: pd.DataFrame):
+
+    units = df['no'].unique().size
+    df_ = df.drop(columns=['no']).set_index(['date'])
+    sample = df_.resample('D').agg(['count', 'sum', 'mean'])
+
+    dates = sample['bb']['count'] / units
+    # print(dates)
+    out = sample['out']['sum']
+    saf = sample['saf']['sum']
+    balance = out - saf
+    rate = saf / out
+    mean_out = sample['out']['mean']
+    mean_games = sample['games']['mean']
+    rb_p = sample['games']['sum'] / sample['rb']['sum']
+
+    s = [dates, out, balance, rate, mean_out, mean_games, rb_p]
+    c = 'dates', 'out', 'balance', 'rate', 'mean_out', 'mean_games', 'rb'
+    _df = pd.concat(s, axis=1)
+    _df.columns = c
+    print(_df.head(3))
 
 
-class Mtable(tk.Frame):
+class Table(tk.Frame):
     def __init__(self, df, master=None):
         super().__init__(master)
         self.pack()
@@ -77,8 +95,11 @@ class Mtable(tk.Frame):
 
 
 if __name__ == '__main__':
-    from tkjug.tkapp import Theme
-    root = tk.Tk()
-    _ = Theme(root)
-    app = Mtable(root)
-    app.mainloop()
+    # from tkjug.tkapp import Theme
+    # root = tk.Tk()
+    # _ = Theme(root)
+    # app = Mtable(root)
+    # app.mainloop()
+    args = kamisato_data()
+    df = args[1]  # im
+    daily_table(df)

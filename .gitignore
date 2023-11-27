@@ -4,3 +4,5 @@ __pycache__/
 .mypy.ini
 *.egg-info/
 .py311/
+build/
+.github/workflows
