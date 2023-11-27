@@ -35,9 +35,11 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: test-results
-        path: artifacts/test-results.xml
+        path: artifacts
 
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      with:
-        files: test-results
+    # - name: Publish Test Results
+    #   uses: EnricoMi/publish-unit-test-result-action@v2
+    #   if: always()
+    #   with:
+    #     files: |
+    #       test-results/**/*.xml
