@@ -1,8 +1,8 @@
 name: Run pytest
 
-on: push  # プッシュやプルリクエスト時に実行する
-
 permissions: write-all
+
+on: push  # プッシュやプルリクエスト時に実行する
 
 jobs:
   test:
@@ -39,14 +39,14 @@ jobs:
         name: test-results
         path: artifacts
 
-    # - name: Publish test results
+    # - name: Publish Test Results
     #   uses: EnricoMi/publish-unit-test-result-action@v2
+    #   if: always()
     #   with:
-    #     files: test-result.xml
+    #     files: |
+    #       artifacts/**/*.xml
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
       with:
-        files: |
-          artifacts/**/*.xml
+        files: artifacts/**/*.xml
