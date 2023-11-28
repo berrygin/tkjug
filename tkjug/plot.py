@@ -9,6 +9,7 @@ import tkinter.ttk as ttk
 
 
 colors = {
+    # dark matplot
     'bluegreen': '#8dd3c7',
     'lemon': '#feffb3',
     'lilac': '#bfbbd9',

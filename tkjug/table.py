@@ -8,6 +8,20 @@ from tkjug.useredis import kamisato_data
 # spam
 sug, im, my, go = kamisato_data()
 
+colors = {
+    # dark matplot
+    'bluegreen': '#8dd3c7',
+    'lemon': '#feffb3',
+    'lilac': '#bfbbd9',
+    'salmon': '#fa8174',
+    'aero': '#81b1d2',
+    'orange': '#fdb462',
+    'junebud': '#b3de69',
+    'violet': '#bc82bd',
+    'mint': '#ccebc4',
+    'yellow': '#ffed6f'
+}
+
 def monthly_table_table(df: pd.DataFrame):
 
     units = df['no'].unique().size
@@ -78,8 +92,13 @@ class Table(tk.Frame):
         tree["column"] = list(range(len(df.columns)))
         tree["show"] = "headings"
 
-        tree.tag_configure('evenrow', background='#191919')
-        tree.tag_configure('highlighted', foreground='red')
+        # tree.tag_configure('evenrow', background='#191919')
+        # tree.tag_configure('highlighted', background='black', foreground=colors['orange'])
+        # tree.tag_configure('evenrow-highlighted', background='#191919', foreground=colors['orange'])
+        tree.tag_configure('break-even', foreground=colors['salmon'])
+        tree.tag_configure('im-break-even', foreground=colors['orange'])
+        tree.tag_configure('my-break-even', foreground=colors['violet'])
+
 
         cols = []
         for i, col in enumerate(df.columns):
@@ -98,14 +117,19 @@ class Table(tk.Frame):
         for i in df.index:
             cols = [df[col][i] for col in df.columns]
             dt = cols[0]
-            w = 'Hol' if dt in holidays.JP() else d[dt.weekday()]
-            dt_s = datetime.strftime(dt, '%y-%m-%d') + ' ' + w
+            wd = 'Hol' if dt in holidays.JP() else d[dt.weekday()]
+            dt_s = datetime.strftime(dt, '%y-%m-%d') + ' ' + wd
             _values = [round(val, 3) if j in (3, 8) else round(val, 1) for j, val in enumerate(cols[1:])]
+            imRate, myRate = _values[3], _values[8]
             values = [dt_s] + _values
-            if i % 2 == 0:
-                tree.insert("", "end", values=values)
+            if imRate >= 1.0 and myRate >= 1.0:
+                tree.insert("", "end", values=values, tags=('break-even'))
+            elif imRate >= 1.0:
+                tree.insert("", "end", values=values, tags=('im-break-even'))
+            elif myRate >= 1.0:
+                tree.insert("", "end", values=values, tags=('my-break-even'))
             else:
-                tree.insert("", "end", values=values, tags=('evenrow'))
+                tree.insert("", "end", values=values)
 
         tree.pack(anchor=tk.W)
 
