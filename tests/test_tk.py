@@ -17,7 +17,7 @@
 # def test_(app):
 #     assert app.hall == 'Kamisato'
 
-def test_():
+def test_one():
     assert 1 == 1
 
 def test_two():
