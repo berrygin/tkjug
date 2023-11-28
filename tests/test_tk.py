@@ -20,4 +20,6 @@
 def test_():
     assert 1 == 1
 
+def test_two():
+    assert True is True
 
