@@ -1,7 +1,7 @@
 # import tkinter as tk
 # from tkjug.kamisato import Hall as Kamisato
 # from tkjug.useredis import kamisato_data
-import pytest
+# import pytest
 
 # mock redis
 
