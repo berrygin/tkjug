@@ -5,7 +5,7 @@ on: push  # プッシュやプルリクエスト時に実行する
 jobs:
   test:
     runs-on: ubuntu-latest # Ubuntuランナーを使用
-    # permissions: write-all
+    permissions: write-all
 
     steps:
     - name: Checkout code
