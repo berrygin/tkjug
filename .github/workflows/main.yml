@@ -5,7 +5,7 @@ on: push  # プッシュやプルリクエスト時に実行する
 jobs:
   test:
     runs-on: ubuntu-latest # Ubuntuランナーを使用
-    # permissions: write-all
+    permissions: write-all
 
     steps:
     - name: Checkout code
@@ -23,7 +23,7 @@ jobs:
 
     - name: Run pytest and display results
       run: |
-        pytest --junitxml=test-result.xml
+        pytest --junitxml=test-result.xml  # イコールの両端にスペースを入れると落ちます
       continue-on-error: true
 
     - name: Upload test results
