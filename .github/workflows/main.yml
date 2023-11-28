@@ -1,4 +1,5 @@
 name: Run pytest
+
 permissions: write-all
 
 on: push  # プッシュやプルリクエスト時に実行する
@@ -26,17 +27,17 @@ jobs:
         pytest --junitxml = test-result.xml
       continue-on-error: true
 
-    # - name: Upload test results
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: test-results
-    #     path: test-result.xml
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: test-result.xml
 
-    # - name: Download results
-    #   uses: actions/download-artifact@v3
-    #   with:
-    #     name: test-results
-    #     path: artifacts
+    - name: Download results
+      uses: actions/download-artifact@v3
+      with:
+        name: test-results
+        path: artifacts
 
     # - name: Publish Test Results
     #   uses: EnricoMi/publish-unit-test-result-action@v2
