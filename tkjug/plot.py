@@ -58,21 +58,43 @@ class Plot(tk.Frame):
     def buttons(self):
         frame = ttk.Frame(self.frame, style='plot.TFrame')
         frame.pack(expand=True, fill=tk.X, padx=128, pady=16)
-        button = ttk.Button(frame, text='prev', style='plot.TButton', command=self.callback())
+        button = ttk.Button(frame, text='prev', style='plot.TButton', command=self.prev_())
         button.pack(side=tk.LEFT, anchor=tk.W)
         h3_font = 'Arial', 16
         label = ttk.Label(frame, textvariable=self.plot_title, style='plot.TLabel', font=h3_font, anchor=tk.CENTER)
         label.pack(expand=True, fill=tk.X, side=tk.LEFT)
-        button = ttk.Button(frame, text='next', style='plot.TButton', command=self.callback())
+        button = ttk.Button(frame, text='next', style='plot.TButton', command=self.next_())
         button.pack(anchor=tk.E)
 
-    def callback(self):
+    def the_month_exist(self, month):
+        df = self.df[self.df['date'].dt.month == month]
+        if df.empty:
+            return False
+        else:
+            return True
+
+    def prev_(self):
         def func():
-            self.ax1.cla()
-            self.ax2.cla()
-            self.ax3.cla()
-            self.plot(10)
-            self.canvas.draw()
+            prev_month = 12 if self.month == 1 else self.month - 1
+            if self.the_month_exist(prev_month):
+                self.month = prev_month
+                self.ax1.cla()
+                self.ax2.cla()
+                self.ax3.cla()
+                self.plot(prev_month)
+                self.canvas.draw()
+        return func
+
+    def next_(self):
+        def func():
+            next_month = 1 if self.month == 12 else self.month + 1
+            if self.the_month_exist(next_month):
+                self.month = next_month
+                self.ax1.cla()
+                self.ax2.cla()
+                self.ax3.cla()
+                self.plot(next_month)
+                self.canvas.draw()
         return func
 
     def init_aixs(self):
@@ -153,7 +175,7 @@ class Plot(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Superhero
-    from tkjug.useredis import kuragano_data
+    from tkjug.db import kuragano_data
     _, im_df, my_df = kuragano_data()
     root = tk.Tk()
     _ = Superhero(root)

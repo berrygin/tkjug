@@ -3,10 +3,9 @@ import holidays
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.useredis import kamisato_data, kuragano_data
 
 # spam
-sug, im, my, go = kamisato_data()
+# sug, im, my, go = kamisato_data()
 
 colors = {
     # dark matplot
@@ -95,9 +94,9 @@ class Table(tk.Frame):
         label = ttk.Label(self.upper_frame, textvariable=self.title, style='c.TLabel', font=h2)
         label.pack(side=tk.LEFT, padx=16, anchor=tk.NW)
         self.init_summary(self.upper_frame)
-        button = ttk.Button(self.upper_frame, text='prev', command=self.prev())
+        button = ttk.Button(self.upper_frame, text='prev', style='c.TButton', command=self.prev())
         button.pack(side=tk.LEFT, padx=8, anchor=tk.NW)
-        button = ttk.Button(self.upper_frame, text='next', command=self.next())
+        button = ttk.Button(self.upper_frame, text='next', style='c.TButton', command=self.next())
         button.pack(anchor=tk.NW, padx=8)
 
     def init_summary(self, frame):
@@ -233,6 +232,7 @@ class Table(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
+    from tkjug.db import kamisato_data, kuragano_data
     root = tk.Tk()
     _ = Theme(root)
     args = kuragano_data()

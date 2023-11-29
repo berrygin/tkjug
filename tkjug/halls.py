@@ -3,7 +3,6 @@ import holidays
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.useredis import kamisato_data
 from tkjug.plot import Plot
 from tkjug.table import Table, concat_df
 
@@ -57,11 +56,15 @@ def calc(dt, df1, df2):
 
 
 class Hall(tk.Frame):
-    def __init__(self, *args, master=None):
+    def __init__(self, *args, hall='', master=None):
         super().__init__(master)
         self.pack()
-        # self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow)
-        self.hall = 'Kamisato'
+        # self.master.protocol('WM_DELETE_WINDOW', self._destroyWindow())
+        
+        if not hall in ['kuragano', 'kamisato']:
+            self._destroyWindow()
+
+        self.hall = hall
         self.args = args  # sug_d, im_df, my_df, (go_df)
         self.sug_d = args[0]
 
@@ -83,19 +86,27 @@ class Hall(tk.Frame):
         variables = [tk.StringVar(value='') for _ in range(len(summary_keys))]
         self.summary_d = dict(zip(summary_keys, variables))
 
-        self.varables_d = {}
-        seqs = self.sequences_of_machine()
-        for seq in seqs:
-            for s in seq:
-                t = tk.StringVar(value=''), tk.StringVar(value=''), tk.StringVar(value='')
-                self.varables_d |= {s: t}
-        self.label_d = {}
-
         self.heading()
         self.date_sug()
         self.buttons()
         self.summary()
-        self.machine_layout()
+
+        self.label_d = {}
+        if hall == 'kuragano':
+            seqs = self.kg_sequences_of_machine()
+        if hall == 'kamisato':
+            seqs = self.ks_sequences_of_machine()
+        self.varables_d = {}
+        for seq in seqs:
+            for s in seq:
+                t = tk.StringVar(value=''), tk.StringVar(value=''), tk.StringVar(value='')
+                self.varables_d |= {s: t}
+
+        if hall == 'kuragano':
+            self.kuragano_machine_layout()
+        if hall == 'kamisato':
+            self.kamisato_machine_layout()
+
         self.footer_space()
 
         self.update_date_sug(dt)
@@ -125,7 +136,7 @@ class Hall(tk.Frame):
         self.label_wk = ttk.Label(frame, textvariable=self.weekday_v, style='c.TLabel', width=4, font=h3, anchor=tk.CENTER)
         self.label_wk.pack(side=tk.LEFT)
         label = ttk.Label(frame, textvariable=self.sug_v, style='c.TLabel', font=h3, anchor=tk.W)
-        label.pack(side=tk.LEFT)    
+        label.pack(side=tk.LEFT)
 
     def update_date_sug(self, dt):
         dt_s = datetime.strftime(dt, '%Y/%m/%d')
@@ -151,7 +162,7 @@ class Hall(tk.Frame):
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='my plot', style='c.TButton', command=self.myplot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='montly table', style='c.TButton', command=self.mtable())
+        btn = ttk.Button(frame3, text='table', style='c.TButton', command=self.table())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
 
     def summary(self):
@@ -263,7 +274,9 @@ class Hall(tk.Frame):
         def func():
             im_df = self.args[1].copy()
             root = tk.Toplevel(self)
-            app = Plot(im_df, 11, 'Kamisato ImJuggler', master=root)
+            hall = self.hall + ' imJuggler'
+            month = self.dt.month
+            app = Plot(im_df, month, hall, master=root)
             app.mainloop()
         return func
 
@@ -271,22 +284,54 @@ class Hall(tk.Frame):
         def func():
             my_df = self.args[2].copy()
             root = tk.Toplevel(self)
-            app = Plot(my_df, 11, 'Kamisato MyJuggler', master=root)
+            hall = self.hall + ' myJuggler'
+            month = self.dt.month
+            app = Plot(my_df, month, hall, master=root)
             app.mainloop()
         return func
 
-    def view_table(self):
+    def table(self):
         def func():
-            args = self.args.copy()
+            args = self.args
             df = concat_df(*args)
-            dt = self.dt.copy()
+            dt = self.dt
             root = tk.Toplevel(self)
-            app = Table(df, dt, 'Kuragano', master=root)
+            app = Table(df, dt, self.hall, master=root)
             app.mainloop()
         return func
+
+    """ Kuragano """
+    def kg_sequences_of_machine(self) -> tuple:
+        seq1 = [str(n) for n in reversed(range(744, 761))]
+        seq2 = [str(n) for n in range(721, 738)] + ['700']
+        seq3 = [str(n) for n in reversed(range(711, 721))]
+        seq4 = [str(n) for n in range(681, 691)]
+        return seq1, seq2, seq3, seq4
+
+    def kuragano_machine_layout(self):
+        frame = ttk.Frame(self.lower_frame, style='c.TFrame')
+        frame.pack(expand=True, fill=tk.BOTH, padx=16)
+
+        seqs = self.kg_sequences_of_machine()
+
+        frm1 = ttk.Frame(frame, style='c.TFrame')
+        frm1.pack(side=tk.LEFT, anchor=tk.NW)
+        self.island(frm1, seqs[0], 'Imjuggler')
+
+        frm2 = ttk.Frame(frame, style='c.TFrame')
+        frm2.pack(side=tk.LEFT, anchor=tk.NW)
+        self.island(frm2, seqs[1], 'ImJuggler')
+
+        frm3 = ttk.Frame(frame, style='c.TFrame')
+        frm3.pack(side=tk.LEFT, anchor=tk.NW)
+        self.island(frm3, seqs[2], 'myJuggler')
+
+        frm4 = ttk.Frame(frame, style='c.TFrame')
+        frm4.pack(side=tk.LEFT, anchor=tk.NW)
+        self.island(frm4, seqs[3], 'myJuggler')
 
     """ Kamisato """
-    def sequences_of_machine(self) -> tuple:
+    def ks_sequences_of_machine(self) -> tuple:
         seq1 = ['1001'] + [str(n) for n in reversed(range(787, 796))]  # im
         seq2 = [str(n) for n in reversed(range(758, 776))]  # im
         seq3 = [str(n) for n in range(750, 758)]  # im
@@ -295,11 +340,11 @@ class Hall(tk.Frame):
         seq6 = [str(n) for n in range(776, 784)]  # go
         return seq1, seq2, seq3, seq4, seq5, seq6
 
-    def machine_layout(self):
+    def kamisato_machine_layout(self):
         frame = ttk.Frame(self.lower_frame, style='c.TFrame')
         frame.pack(expand=True, fill=tk.BOTH, padx=16)
 
-        seqs = self.sequences_of_machine()
+        seqs = self.ks_sequences_of_machine()
 
         frm1 = ttk.Frame(frame, style='c.TFrame')
         frm1.pack(side=tk.LEFT, anchor=tk.NW)
@@ -324,8 +369,10 @@ class Hall(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
+    from tkjug.db import kuragano_data, kamisato_data
     root = tk.Tk()
     _ = Theme(root)
+    # args = kuragano_data()
     args = kamisato_data()
-    app = Hall(*args, master=root)
+    app = Hall(*args, hall='kamisato', master=root)
     app.mainloop()

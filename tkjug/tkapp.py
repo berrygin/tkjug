@@ -2,14 +2,8 @@ import os
 import redis
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.kuragano import Hall as Kuragano
-from tkjug.kamisato import Hall as Kamisato
-from tkjug.useredis import kuragano_data, kamisato_data
-
-
-# def test2():
-#     rc = redis.Redis()
-#     print(len(rc.keys()))
+from tkjug.db import kuragano_data, kamisato_data
+from tkjug.halls import Hall
 
 
 class Theme(tk.Frame):
@@ -47,8 +41,9 @@ class Theme(tk.Frame):
         style.configure('c.TButton', borderwidth=0, background=colors['secondary'], foreground=fg)
         style.configure('c.TSeparator', background=bg)
         # tree
-        style.configure('Treeview.Heading', background=colors['light'], foreground=fg, font=('Arial', 12))
         fontsize = 11 if os.name == 'nt' else 12
+        style.configure('Treeview.Heading', background=colors['light'], foreground=fg, font=('Arial', fontsize))
+        fontsize = 10 if os.name == 'nt' else 12
         style.configure('Treeview', background='black', foreground=fg, font=('Courier', fontsize))
         # matplot dark
         style.configure('plot.TFrame', background='black')
@@ -98,7 +93,7 @@ class App(tk.Frame):
         def func():
             root = tk.Toplevel(self)
             args = kuragano_data()
-            app = Kuragano(*args, master=root)
+            app = Hall(*args, hall='kuragano', master=root)
             app.mainloop()
         return func
 
@@ -106,7 +101,7 @@ class App(tk.Frame):
         def func():
             root = tk.Toplevel(self)
             args = kamisato_data()
-            app = Kamisato(*args, master=root)
+            app = Hall(*args, hall='kamisato', master=root)
             app.mainloop()
         return func
 
