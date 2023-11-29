@@ -5,7 +5,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.useredis import kuragano_data
 from tkjug.plot import Plot
-from tkjug.table import Table
+from tkjug.table import Table, daily_table
 
 
 colors = {
@@ -151,7 +151,7 @@ class Hall(tk.Frame):
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
         btn = ttk.Button(frame3, text='my plot', style='c.TButton', command=self.myplot())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
-        btn = ttk.Button(frame3, text='montly table', style='c.TButton', command=self.mtable())
+        btn = ttk.Button(frame3, text='table', style='c.TButton', command=self.table())
         btn.pack(side=tk.LEFT, anchor=tk.N, padx=4, pady=8)
 
     def summary(self):
@@ -275,11 +275,14 @@ class Hall(tk.Frame):
             app.mainloop()
         return func
 
-    def mtable(self):
+    def table(self):
         def func():
-            df = self.args[2].copy()
+            imdf = daily_table(args[1], label='i_')
+            mydf = daily_table(args[2], label='m_')
+            df = pd.concat([imdf, mydf], axis=1)
+            dt = self.dt
             root = tk.Toplevel(self)
-            app = Mtable(df, master=root)
+            app = Table(df, dt, master=root)
             app.mainloop()
         return func
 

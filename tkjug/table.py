@@ -3,7 +3,7 @@ import holidays
 import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.useredis import kamisato_data
+from tkjug.useredis import kamisato_data, kuragano_data
 
 # spam
 sug, im, my, go = kamisato_data()
@@ -46,7 +46,7 @@ def monthly_table_table(df: pd.DataFrame):
     return _df
 
 
-def daily_table(df: pd.DataFrame, model='i'):
+def daily_table(df: pd.DataFrame, label='i_'):
 
     # units = df['no'].unique().size
     df_ = df.drop(columns=['no']).set_index(['date'])
@@ -60,26 +60,61 @@ def daily_table(df: pd.DataFrame, model='i'):
     rate = saf / out
     rb = sample['games']['sum'] / sample['rb']['sum']
 
-    m_out.name = f'{model} out'
-    m_games.name = f'{model} games'
-    bal.name = f'{model} bal'
-    rate.name = f'{model} rate'
-    rb.name = f'{model} rb'
+    m_out.name = label + 'out'
+    m_games.name = label + 'games'
+    bal.name = label + 'bal'
+    rate.name = label + 'rate'
+    rb.name = label + 'rb'
     s = [m_out, m_games, bal, rate, rb]
 
     return pd.concat(s, axis=1)
 
 
 class Table(tk.Frame):
-    def __init__(self, df, master=None):
+    def __init__(self, df, dt, master=None):
         super().__init__(master)
         self.pack()
         self.df = df
+        self.dt = dt
 
         self.frame = ttk.Frame(self.master, style='c.TFrame')
         self.frame.pack()
 
-        self.tree()
+        self.buttons()
+
+        self.init_tree()
+
+        # self.tree()
+
+    def buttons(self):
+        button = ttk.Button(self.frame, text='prev', command=self.prev())
+        button.pack()
+
+    def init_tree(self):
+        dt_s = datetime.strftime(self.dt, '%Y-%m')
+        df_ = self.df.loc[dt_s]
+        df = df_.reset_index()
+
+        height = 31
+        self.tree = ttk.Treeview(self.frame, height=height)
+        self.tree['column'] = list(range(len(df.columns)))
+        self.tree['show'] = 'headings'
+        
+        for i, name in enumerate(df.columns):
+            self.tree.heading(i, text=name)
+            anchor = tk.E if i else tk.W
+            width = 82 if i else 128
+            self.tree.column(i, width=width, anchor=anchor)
+
+        self.tree_ids = []
+        for i in range(height):
+            values = ['' for _ in range(len(df.columns))]
+            item = self.tree.insert("", "end", values=values)
+            self.tree_ids.append((i+1, item))
+
+        print(self.tree_ids)
+
+        self.tree.pack()
 
     def tree(self):
         frame = ttk.Frame(self.frame, style='c.TFrame')
@@ -87,23 +122,21 @@ class Table(tk.Frame):
         label = ttk.Label(frame, text='Table', style='c.TLabel', font=('Arial', 16))
         label.pack(anchor=tk.W, pady=8)
 
-        df = self.df.reset_index()
+        dt_s = datetime.strftime(self.dt, '%Y-%m')
+        df_ = self.df.loc[dt_s]
+        df = df_.reset_index()
         tree = ttk.Treeview(frame, height=len(df))
         tree["column"] = list(range(len(df.columns)))
         tree["show"] = "headings"
 
-        # tree.tag_configure('evenrow', background='#191919')
-        # tree.tag_configure('highlighted', background='black', foreground=colors['orange'])
-        # tree.tag_configure('evenrow-highlighted', background='#191919', foreground=colors['orange'])
         tree.tag_configure('break-even', foreground=colors['salmon'])
         tree.tag_configure('im-break-even', foreground=colors['orange'])
         tree.tag_configure('my-break-even', foreground=colors['violet'])
 
-
         cols = []
         for i, col in enumerate(df.columns):
             if not i:
-                width = 98
+                width = 128
             else:
                 width = 82
             cols.append((col, width))
@@ -133,14 +166,19 @@ class Table(tk.Frame):
 
         tree.pack(anchor=tk.W)
 
+    def prev(self):
+        def func():
+            print('ham eggs')
+        return func
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
     root = tk.Tk()
     _ = Theme(root)
-    args = kamisato_data()
-    idf = daily_table(args[1], model='i')
-    mdf = daily_table(args[2], model='m')
-    df = pd.concat([idf, mdf], axis=1)
-    app = Table(df, master=root)
+    args = kuragano_data()
+    imdf = daily_table(args[1], label='i_')
+    mydf = daily_table(args[2], label='m_')
+    df = pd.concat([imdf, mydf], axis=1)
+    dt = datetime(2023, 10, 1)
+    app = Table(df, dt, master=root)
     app.mainloop()
