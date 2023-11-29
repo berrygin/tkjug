@@ -1,6 +1,5 @@
-  matplotlib
-  pandas
-  redis
-  holidays
-  pytest
-  tkjug
+matplotlib
+pandas
+redis
+holidays
+pytest
