@@ -32,13 +32,13 @@ def get_missing_dates(df):
     missing_dates = [date for date in days_in_target_month if date not in df.index]
     return missing_dates
 
-monthd = { i + 1: m for i, m in enumerate(
-    ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+mon_d = { i + 1: m for i, m in enumerate(
+    ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
 )}
 
 
 class Plot(tk.Frame):
-    def __init__(self, df, month, title, master=None):
+    def __init__(self, df, month, hall, master=None):
         super().__init__(master)
         self.pack()
         self.df = df
@@ -47,8 +47,8 @@ class Plot(tk.Frame):
         self.frame = ttk.Frame(self, style='plot.TFrame')
         self.frame.pack(expand=True, fill=tk.BOTH)
 
-        pt = title + ' ' + monthd[month]
-        self.plot_title = tk.StringVar(value=pt)
+        s = hall + ' ' + mon_d[month]
+        self.plot_title = tk.StringVar(value=s)
 
         self.buttons()
         self.init_aixs()
@@ -174,10 +174,11 @@ class Plot(tk.Frame):
         self.master.destroy()
 
 if __name__ == '__main__':
-    from tkjug.tkapp import Superhero
-    from tkjug.db import kuragano_data
+    from tkjug.tkapp import Theme
+    from tkjug.dbc import kuragano_data
     _, im_df, my_df = kuragano_data()
     root = tk.Tk()
-    _ = Superhero(root)
-    app = Plot(im_df, 11, 'test', master=root)
+    _ = Theme(root)
+    hall = 'kuragano'
+    app = Plot(im_df, 11, hall, master=root)
     app.mainloop()

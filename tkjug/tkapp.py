@@ -2,12 +2,12 @@ import os
 import redis
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkjug.db import kuragano_data, kamisato_data
+from tkjug.dbc import kuragano_data, kamisato_data
 from tkjug.halls import Hall
 
 
 class Theme(tk.Frame):
-    ''' Bootstrap Superhero & clam Theme '''
+    ''' Bootstrap & clam Theme '''
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()

@@ -316,11 +316,11 @@ class Hall(tk.Frame):
 
         frm1 = ttk.Frame(frame, style='c.TFrame')
         frm1.pack(side=tk.LEFT, anchor=tk.NW)
-        self.island(frm1, seqs[0], 'Imjuggler')
+        self.island(frm1, seqs[0], 'imjuggler')
 
         frm2 = ttk.Frame(frame, style='c.TFrame')
         frm2.pack(side=tk.LEFT, anchor=tk.NW)
-        self.island(frm2, seqs[1], 'ImJuggler')
+        self.island(frm2, seqs[1], 'imJuggler')
 
         frm3 = ttk.Frame(frame, style='c.TFrame')
         frm3.pack(side=tk.LEFT, anchor=tk.NW)
@@ -348,16 +348,16 @@ class Hall(tk.Frame):
 
         frm1 = ttk.Frame(frame, style='c.TFrame')
         frm1.pack(side=tk.LEFT, anchor=tk.NW)
-        self.island(frm1, seqs[0], 'Imjuggler')
+        self.island(frm1, seqs[0], 'imjuggler')
         self.island(frm1, seqs[5], 'goJuggler')
 
         frm2 = ttk.Frame(frame, style='c.TFrame')
         frm2.pack(side=tk.LEFT, anchor=tk.NW)
-        self.island(frm2, seqs[1], 'ImJuggler')
+        self.island(frm2, seqs[1], 'imJuggler')
 
         frm3 = ttk.Frame(frame, style='c.TFrame')
         frm3.pack(side=tk.LEFT, anchor=tk.NW)
-        self.island(frm3, seqs[2], 'ImJuggler')
+        self.island(frm3, seqs[2], 'imJuggler')
 
         frm4 = ttk.Frame(frame, style='c.TFrame')
         frm4.pack(side=tk.LEFT, anchor=tk.N)
@@ -369,7 +369,7 @@ class Hall(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
-    from tkjug.db import kuragano_data, kamisato_data
+    from tkjug.dbc import kuragano_data, kamisato_data
     root = tk.Tk()
     _ = Theme(root)
     # args = kuragano_data()

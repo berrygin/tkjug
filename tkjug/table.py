@@ -4,9 +4,6 @@ import pandas as pd
 import tkinter as tk
 import tkinter.ttk as ttk
 
-# spam
-# sug, im, my, go = kamisato_data()
-
 colors = {
     # dark matplot
     'bluegreen': '#8dd3c7',
@@ -21,8 +18,8 @@ colors = {
     'yellow': '#ffed6f'
 }
 
-monthd = { i + 1: m for i, m in enumerate(
-    ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+mon_d = { i + 1: m for i, m in enumerate(
+    ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
 )}
 
 def next_month(dt):
@@ -75,7 +72,7 @@ class Table(tk.Frame):
         self.dt = dt
         self.hall = hall
         
-        value = hall + ' ' + monthd[dt.month]
+        value = hall + ' ' + mon_d[dt.month]
         self.title = tk.StringVar(value=value)
 
         frame = ttk.Frame(self.master, style='c.TFrame')
@@ -90,8 +87,8 @@ class Table(tk.Frame):
         self.set_tree(dt)
 
     def heading(self):
-        h2 = 'Arial', 24
-        label = ttk.Label(self.upper_frame, textvariable=self.title, style='c.TLabel', font=h2)
+        h3 = 'Arial', 18
+        label = ttk.Label(self.upper_frame, textvariable=self.title, style='c.TLabel', font=h3)
         label.pack(side=tk.LEFT, padx=16, anchor=tk.NW)
         self.init_summary(self.upper_frame)
         button = ttk.Button(self.upper_frame, text='prev', style='c.TButton', command=self.prev())
@@ -212,7 +209,7 @@ class Table(tk.Frame):
         def func():
             prev_dt = prev_month(self.dt)
             if self.the_month_exist(prev_dt):
-                value = self.hall + ' ' + monthd[prev_dt.month]
+                value = self.hall + ' ' + mon_d[prev_dt.month]
                 self.title.set(value)
                 self.reset_tree()
                 self.set_tree(prev_dt)
@@ -223,7 +220,7 @@ class Table(tk.Frame):
         def func():
             next_dt = next_month(self.dt)
             if self.the_month_exist(next_dt):
-                value = self.hall + ' ' + monthd[next_dt.month]
+                value = self.hall + ' ' + mon_d[next_dt.month]
                 self.title.set(value)
                 self.reset_tree()
                 self.set_tree(next_dt)
@@ -232,12 +229,12 @@ class Table(tk.Frame):
 
 if __name__ == '__main__':
     from tkjug.tkapp import Theme
-    from tkjug.db import kamisato_data, kuragano_data
+    from tkjug.dbc import kamisato_data, kuragano_data
     root = tk.Tk()
     _ = Theme(root)
     args = kuragano_data()
     df = concat_df(*args)
     dt = datetime(2023, 11, 1)
-    hall = 'Kuragano'
+    hall = 'kuragano'
     app = Table(df, dt, hall, master=root)
     app.mainloop()
