@@ -1,5 +1,5 @@
-from datetime import datetime
 from tkjug.table import *
+from datetime import datetime
 
 
 def test_next_month():
