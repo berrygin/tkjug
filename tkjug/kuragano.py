@@ -5,7 +5,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.useredis import kuragano_data
 from tkjug.plot import Plot
-from tkjug.table import Table, daily_table
+from tkjug.table import Table, concat_df
 
 
 colors = {
@@ -277,12 +277,12 @@ class Hall(tk.Frame):
 
     def table(self):
         def func():
-            imdf = daily_table(args[1], label='i_')
-            mydf = daily_table(args[2], label='m_')
-            df = pd.concat([imdf, mydf], axis=1)
+            args = self.args
+            df = concat_df(*args)
             dt = self.dt
+            hall = 'Kuragano'
             root = tk.Toplevel(self)
-            app = Table(df, dt, master=root)
+            app = Table(df, dt, hall, master=root)
             app.mainloop()
         return func
 

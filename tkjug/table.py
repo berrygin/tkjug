@@ -22,29 +22,21 @@ colors = {
     'yellow': '#ffed6f'
 }
 
-def monthly_table_table(df: pd.DataFrame):
+monthd = { i + 1: m for i, m in enumerate(
+    ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+)}
 
-    units = df['no'].unique().size
-    df_ = df.drop(columns=['no']).set_index(['date'])
-    sample = df_.resample('M').agg(['count', 'sum', 'mean'])
-    print(sample.index)
+def next_month(dt):
+    year = dt.year + (dt.month // 12)
+    month = dt.month % 12 + 1
+    next_month = datetime(year, month, 1)
+    return next_month
 
-    dates = sample['bb']['count'] / units
-    # print(dates)
-    out = sample['out']['sum']
-    saf = sample['saf']['sum']
-    balance = out - saf
-    rate = saf / out
-    mean_out = sample['out']['mean']
-    mean_games = sample['games']['mean']
-    rb_p = sample['games']['sum'] / sample['rb']['sum']
-
-    s = [dates, out, balance, rate, mean_out, mean_games, rb_p]
-    c = 'dates', 'out', 'balance', 'rate', 'mean_out', 'mean_games', 'rb'
-    _df = pd.concat(s, axis=1)
-    _df.columns = c
-    return _df
-
+def prev_month(dt):
+    first_dt = datetime(dt.year, dt.month, 1)
+    dt_ = first_dt + timedelta(days=-1)
+    prev_month = datetime(dt_.year, dt_.month, 1)
+    return prev_month
 
 def daily_table(df: pd.DataFrame, label='i_'):
 
@@ -70,105 +62,173 @@ def daily_table(df: pd.DataFrame, label='i_'):
     return pd.concat(s, axis=1)
 
 
+def concat_df(*args):
+    imdf = daily_table(args[1], label='i_')
+    mydf = daily_table(args[2], label='m_')
+    return pd.concat([imdf, mydf], axis=1)
+
+
 class Table(tk.Frame):
-    def __init__(self, df, dt, master=None):
+    def __init__(self, df, dt, hall, master=None):
         super().__init__(master)
         self.pack()
         self.df = df
         self.dt = dt
+        self.hall = hall
+        
+        value = hall + ' ' + monthd[dt.month]
+        self.title = tk.StringVar(value=value)
 
-        self.frame = ttk.Frame(self.master, style='c.TFrame')
-        self.frame.pack()
+        frame = ttk.Frame(self.master, style='c.TFrame')
+        frame.pack(expand=True, fill=tk.BOTH)
+        self.upper_frame = ttk.Frame(frame, style='c.TFrame')
+        self.upper_frame.pack(expand=True, fill=tk.X, padx=8, pady=16)
+        self.lower_frame = ttk.Frame(frame, style='c.TFrame')
+        self.lower_frame.pack(expand=True, fill=tk.X, padx=8)
 
-        self.buttons()
-
+        self.heading()
         self.init_tree()
+        self.set_tree(dt)
 
-        # self.tree()
+    def heading(self):
+        h2 = 'Arial', 24
+        label = ttk.Label(self.upper_frame, textvariable=self.title, style='c.TLabel', font=h2)
+        label.pack(side=tk.LEFT, padx=16, anchor=tk.NW)
+        self.init_summary(self.upper_frame)
+        button = ttk.Button(self.upper_frame, text='prev', command=self.prev())
+        button.pack(side=tk.LEFT, padx=8, anchor=tk.NW)
+        button = ttk.Button(self.upper_frame, text='next', command=self.next())
+        button.pack(anchor=tk.NW, padx=8)
 
-    def buttons(self):
-        button = ttk.Button(self.frame, text='prev', command=self.prev())
-        button.pack()
+    def init_summary(self, frame):
+        self.tree_s = ttk.Treeview(frame, height=1, show='headings')
+        columns = 'i_out', 'i_rate', 'i_reg', 'm_out', 'm_rate', 'm_reg'
+        self.tree_s['column'] = columns
+        for name in columns:
+            self.tree_s.heading(name, text=name, anchor=tk.CENTER)
+            self.tree_s.column(name, width=82, anchor=tk.E)
+        self.item_s = self.tree_s.insert('', 'end', values=('',))
+        self.tree_s.pack(side=tk.LEFT, padx=8)
+
+    def set_summary(self, df):
+        means = df[['i_out', 'i_rate', 'i_rb', 'm_out', 'm_rate', 'm_rb']].mean()
+        values = [round(val, 3) if idx.endswith('rate') else round(val, 1) for idx, val in means.items()]
+        self.tree_s.item(self.item_s, values=values)
 
     def init_tree(self):
         dt_s = datetime.strftime(self.dt, '%Y-%m')
         df_ = self.df.loc[dt_s]
         df = df_.reset_index()
 
-        height = 31
-        self.tree = ttk.Treeview(self.frame, height=height)
-        self.tree['column'] = list(range(len(df.columns)))
-        self.tree['show'] = 'headings'
-        
-        for i, name in enumerate(df.columns):
-            self.tree.heading(i, text=name)
-            anchor = tk.E if i else tk.W
-            width = 82 if i else 128
-            self.tree.column(i, width=width, anchor=anchor)
+        days = 31
+        self.tree = ttk.Treeview(self.lower_frame, height=days, show='headings')
+        self.tree['column'] = df.columns.to_list()  # listにしないと一つ余計なフィールドがでる
+        for name in df.columns:
+            width = 128 if name == 'date' else 82
+            anchor = tk.CENTER if name == 'date' else tk.E
+            self.tree.heading(name, text=name)
+            self.tree.column(name, width=width, anchor=anchor)
 
-        self.tree_ids = []
-        for i in range(height):
-            values = ['' for _ in range(len(df.columns))]
-            item = self.tree.insert("", "end", values=values)
-            self.tree_ids.append((i+1, item))
-
-        print(self.tree_ids)
+        # 空のtreeviewを作成
+        self.items = []
+        for i in range(days):
+            item = self.tree.insert('', 'end', values=('',))
+            self.items.append((i+1, item))
 
         self.tree.pack()
 
-    def tree(self):
-        frame = ttk.Frame(self.frame, style='c.TFrame')
-        frame.pack(expand=True, fill=tk.BOTH, padx=16, pady=16)
-        label = ttk.Label(frame, text='Table', style='c.TLabel', font=('Arial', 16))
-        label.pack(anchor=tk.W, pady=8)
+    def reset_tree(self):
+        for _, item in self.items:
+            self.tree.item(item, values=('',))
 
-        dt_s = datetime.strftime(self.dt, '%Y-%m')
+    def set_tree(self, dt):
+
+        dt_s = datetime.strftime(dt, '%Y-%m')
         df_ = self.df.loc[dt_s]
         df = df_.reset_index()
-        tree = ttk.Treeview(frame, height=len(df))
-        tree["column"] = list(range(len(df.columns)))
-        tree["show"] = "headings"
 
-        tree.tag_configure('break-even', foreground=colors['salmon'])
-        tree.tag_configure('im-break-even', foreground=colors['orange'])
-        tree.tag_configure('my-break-even', foreground=colors['violet'])
+        self.set_summary(df)
 
-        cols = []
-        for i, col in enumerate(df.columns):
-            if not i:
-                width = 128
+        self.tree.tag_configure('lose', foreground='white')
+        self.tree.tag_configure('break-even', foreground=colors['salmon'])
+        self.tree.tag_configure('im-break-even', foreground=colors['orange'])
+        self.tree.tag_configure('my-break-even', foreground=colors['violet'])
+
+        d = {}
+        for _, row in df.iterrows():
+            d |= {row['date'].day: row}
+
+        year, month = dt.year, dt.month
+        for i, item in self.items:
+            im_rate, my_rate = 0, 0
+            if i in d.keys():
+                row = d[i]
+                im_rate = row['i_rate']
+                my_rate = row['m_rate']
+                values = self.get_values(row)
             else:
-                width = 82
-            cols.append((col, width))
+                try:
+                    dt = datetime(year, month, i)
+                    dt_s = self.get_dt_s(dt)
+                    values = (dt_s,)
+                except ValueError:
+                    values = ('',)
 
-        for i, (name, width) in enumerate(cols):
-            tree.heading(i, text=name)
-            anchor = tk.E if i > 0 else tk.W
-            tree.column(i, width=width, anchor=anchor)
-
-        d = {0: 'mon', 1: 'tue', 2: 'wed', 3: 'thu', 4: 'fri', 5: 'sat',6: 'sun'}
-        for i in df.index:
-            cols = [df[col][i] for col in df.columns]
-            dt = cols[0]
-            wd = 'Hol' if dt in holidays.JP() else d[dt.weekday()]
-            dt_s = datetime.strftime(dt, '%y-%m-%d') + ' ' + wd
-            _values = [round(val, 3) if j in (3, 8) else round(val, 1) for j, val in enumerate(cols[1:])]
-            imRate, myRate = _values[3], _values[8]
-            values = [dt_s] + _values
-            if imRate >= 1.0 and myRate >= 1.0:
-                tree.insert("", "end", values=values, tags=('break-even'))
-            elif imRate >= 1.0:
-                tree.insert("", "end", values=values, tags=('im-break-even'))
-            elif myRate >= 1.0:
-                tree.insert("", "end", values=values, tags=('my-break-even'))
+            if im_rate >= 1.0 and my_rate >= 1.0:
+                self.tree.item(item, values=values, tags=['break-even'])
+            elif im_rate >= 1.0:
+                self.tree.item(item, values=values, tags=['im-break-even'])
+            elif my_rate >= 1.0:
+                self.tree.item(item, values=values, tags=['my-break-even'])
             else:
-                tree.insert("", "end", values=values)
+                self.tree.item(item, values=values, tags=['lose'])
 
-        tree.pack(anchor=tk.W)
+    def get_dt_s(self, dt):
+        dic = {0: 'mon', 1: 'tue', 2: 'wed', 3: 'thu', 4: 'fri', 5: 'sat',6: 'sun'}
+        weekday = 'hol' if dt in holidays.JP() else dic[dt.weekday()]
+        return datetime.strftime(dt, '%y-%m-%d') + ' ' + weekday
+
+    def get_values(self, row):
+        values = []
+        for idx, item in row.items():
+            if idx == 'date':
+                value = self.get_dt_s(item)
+            elif idx.endswith('rate'):
+                value = round(item, 3)
+            else:
+                value = round(item, 1)
+            values.append(value)
+        return values
+
+    def the_month_exist(self, dt):
+        dt_s = datetime.strftime(dt, '%Y-%m')
+        try:
+            self.df.loc[dt_s]
+        except KeyError:
+            return False
+        else:
+            return True
 
     def prev(self):
         def func():
-            print('ham eggs')
+            prev_dt = prev_month(self.dt)
+            if self.the_month_exist(prev_dt):
+                value = self.hall + ' ' + monthd[prev_dt.month]
+                self.title.set(value)
+                self.reset_tree()
+                self.set_tree(prev_dt)
+                self.dt = prev_dt
+        return func
+
+    def next(self):
+        def func():
+            next_dt = next_month(self.dt)
+            if self.the_month_exist(next_dt):
+                value = self.hall + ' ' + monthd[next_dt.month]
+                self.title.set(value)
+                self.reset_tree()
+                self.set_tree(next_dt)
+                self.dt = next_dt
         return func
 
 if __name__ == '__main__':
@@ -176,9 +236,8 @@ if __name__ == '__main__':
     root = tk.Tk()
     _ = Theme(root)
     args = kuragano_data()
-    imdf = daily_table(args[1], label='i_')
-    mydf = daily_table(args[2], label='m_')
-    df = pd.concat([imdf, mydf], axis=1)
-    dt = datetime(2023, 10, 1)
-    app = Table(df, dt, master=root)
+    df = concat_df(*args)
+    dt = datetime(2023, 11, 1)
+    hall = 'Kuragano'
+    app = Table(df, dt, hall, master=root)
     app.mainloop()

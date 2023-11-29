@@ -5,7 +5,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.useredis import kamisato_data
 from tkjug.plot import Plot
-from tkjug.table import Table
+from tkjug.table import Table, concat_df
 
 
 colors = {
@@ -275,11 +275,13 @@ class Hall(tk.Frame):
             app.mainloop()
         return func
 
-    def mtable(self):
+    def view_table(self):
         def func():
-            df = self.args[2].copy()
+            args = self.args.copy()
+            df = concat_df(*args)
+            dt = self.dt.copy()
             root = tk.Toplevel(self)
-            app = Mtable(df, master=root)
+            app = Table(df, dt, 'Kuragano', master=root)
             app.mainloop()
         return func
 
