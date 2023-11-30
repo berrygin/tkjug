@@ -3,7 +3,7 @@ import redis
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkjug.dbc import kuragano_data, kamisato_data
-from tkjug.halls import Hall
+from tkjug.hall import Hall
 
 
 class Theme(tk.Frame):
