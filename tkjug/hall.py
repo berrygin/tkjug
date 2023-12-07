@@ -7,7 +7,21 @@ from tkjug.plot import Plot
 from tkjug.table import Table, concat_df
 
 
-colors = {
+_colors = {
+    # dark matplot
+    'bluegreen': '#8dd3c7',
+    'lemon': '#feffb3',
+    'lilac': '#bfbbd9',
+    'salmon': '#fa8174',
+    'aero': '#81b1d2',
+    'orange': '#fdb462',
+    'junebud': '#b3de69',
+    'violet': '#bc82bd',
+    'mint': '#ccebc4',
+    'yellow': '#ffed6f'
+}
+
+cyolors = {
     # cyborg
     'primary': '#0da3de',
     'secondary': '#5e5e5e',
@@ -15,6 +29,20 @@ colors = {
     'info': '#ad0dd4',
     'warning': '#ff890d',
     'danger': '#df0d0d',
+    'foreground': '#ffffff',
+    'light': '#2d2d2d',
+    'dark': '#b1b3b2',
+    'background': '#060606'
+}
+
+colors = {
+    # cyborg
+    'primary': '#0da3de',
+    'secondary': '#5e5e5e',
+    'success': _colors['junebud'],
+    'info': _colors['aero'],
+    'warning': _colors['yellow'],
+    'danger': _colors['salmon'],
     'foreground': '#ffffff',
     'light': '#2d2d2d',
     'dark': '#b1b3b2',
@@ -235,8 +263,8 @@ class Hall(tk.Frame):
             self.label_d[machine_no][0].configure(foreground=color)
             color = colors['warning'] if games >= 2500 and rb_rate < 300 else colors['foreground']
             self.label_d[machine_no][1].configure(foreground=color)
-            color = colors['dark'] if pd.isna(rb_rate) else colors['foreground']
-            self.label_d[machine_no][1].configure(foreground=color)
+            if pd.isna(rb_rate):
+                self.label_d[machine_no][1].configure(foreground=colors['dark'])
             color = colors['danger'] if bal >= 2000 else colors['foreground']
             self.label_d[machine_no][2].configure(foreground=color)
 
